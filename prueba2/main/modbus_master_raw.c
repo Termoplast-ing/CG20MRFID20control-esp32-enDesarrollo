@@ -30,11 +30,11 @@
 uint16_t modbus_crc16(const uint8_t *buf, int len);
 
 void send_modbus_request(const uint8_t *frame, int len) {
-    printf("chau");
-    printf("%d", len);
-    for(int i = 0; i < len; i++) {
-        printf("%d ", frame[i]);
-    }
+   // printf("chau");
+   // printf("%d", len);
+   // for(int i = 0; i < len; i++) {
+   //     printf("%d ", frame[i]);
+   // }
     //printf("\n");
     gpio_set_level(GPIO_NUM_4, 1);
     vTaskDelay(pdMS_TO_TICKS(2));
@@ -80,10 +80,10 @@ void modbus_master_task(void *arg) {
     frame[frame[6]-2] = crc & 0xFF; // CRC byte bajo
     frame[frame[6]-1] = crc >> 8;   // CRC byte alto
     send_modbus_request(frame,frame[6]);
-    printf("ahora si que si\n");
+    //printf("ahora si que si\n");
     vTaskDelay(pdMS_TO_TICKS(200));
     receive_modbus_response(response, BUF_SIZE);
-    printf("delay\n");
+    //printf("delay\n");
     vTaskDelete(NULL);
 }
 
