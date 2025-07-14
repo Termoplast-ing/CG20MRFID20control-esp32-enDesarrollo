@@ -1,0 +1,18 @@
+{
+  "C_Cpp.intelliSenseEngine": "default",
+  "idf.espIdfPath": "/home/blavila/esp/esp-idf",
+  "idf.pythonInstallPath": "/usr/bin/python3",
+  "idf.openOcdConfigs": [
+    "board/esp32-wrover-kit-3.3v.cfg"
+  ],
+  "idf.port": "/dev/ttyACM0",
+  "idf.toolsPath": "/home/blavila/.espressif",
+  "idf.customExtraVars": {
+    "IDF_TARGET": "esp32"
+  },
+  "files.associations": {
+    "modbus_master_raw.h": "c",
+    "semphr.h": "c"
+  },
+  "idf.flashType": "UART"
+}

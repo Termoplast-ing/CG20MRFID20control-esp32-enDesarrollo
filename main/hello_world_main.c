@@ -107,7 +107,7 @@ void app_main(void)
     }
 }
  */
-
+/*
  #include <stdio.h>
 #include <string.h>
 #include "freertos/FreeRTOS.h"
@@ -144,4 +144,7 @@ void app_main(void)
     } else {
         ESP_LOGW(TAG, "⚠️ No se recibió respuesta válida (%d)", len);
     }
-}
+}*/
+
+
+

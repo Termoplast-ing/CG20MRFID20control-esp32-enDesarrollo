@@ -12,7 +12,8 @@
         "uart.h": "c",
         "esp_log.h": "c",
         "stdint.h": "c",
-        "freertos.h": "c"
+        "freertos.h": "c",
+        "queue.h": "c"
     },
     "idf.flashType": "UART"
 }
