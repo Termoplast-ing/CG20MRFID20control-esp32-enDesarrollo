@@ -60,6 +60,7 @@ void modbus_master_task(void *arg) {
     uint8_t response[BUF_SIZE];
     uint16_t crc;
 
+    // --- Ejemplo: Leer registros (0x03) ---
     // --- Ejemplo: Escribir un registro (0x06) ---
     frame[0] = SLAVE_ADDR;
     frame[1] = 0x06;
