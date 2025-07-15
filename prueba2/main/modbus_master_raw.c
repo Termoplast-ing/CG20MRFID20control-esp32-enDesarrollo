@@ -29,13 +29,10 @@
 
 uint16_t modbus_crc16(const uint8_t *buf, int len);
 
+void tarea51(data_animal a, time_t t);
+
 void send_modbus_request(const uint8_t *frame, int len) {
-    printf("chau");
-    printf("%d", len);
-    for(int i = 0; i < len; i++) {
-        printf("%d ", frame[i]);
-    }
-    //printf("\n");
+
     gpio_set_level(GPIO_NUM_4, 1);
     vTaskDelay(pdMS_TO_TICKS(2));
     uart_write_bytes(UART_NUM2, (const char *)frame, len);
@@ -47,20 +44,19 @@ int receive_modbus_response(uint8_t *buf, int maxlen) {
 
     int len = uart_read_bytes(UART_NUM2, buf, maxlen, pdMS_TO_TICKS(200));
     if (len > 0) {
-        printf("Respuesta recibida (%d bytes):\n", len);
         for (int i = 0; i < len; i++) printf("%02X ", buf[i]);
-        printf("\n");
     }
     return len;
 }
 
 void modbus_master_task(void *arg) {
+
+
     
-    uint8_t frame[BUF_SIZE];
+   /* uint8_t frame[BUF_SIZE];
     uint8_t response[BUF_SIZE];
     uint16_t crc;
 
-    // --- Ejemplo: Leer registros (0x03) ---
     // --- Ejemplo: Escribir un registro (0x06) ---
     frame[0] = SLAVE_ADDR;
     frame[1] = 0x06;
@@ -84,7 +80,7 @@ void modbus_master_task(void *arg) {
     printf("ahora si que si\n");
     vTaskDelay(pdMS_TO_TICKS(200));
     receive_modbus_response(response, BUF_SIZE);
-    printf("delay\n");
+    printf("delay\n");*/
     vTaskDelete(NULL);
 }
 
@@ -162,11 +158,10 @@ void tarea51(data_animal animal, time_t tiempo) {
     frame[29] = animal.nombre[14]; frame[30] = '\0';  // hasta dir. 30
 
     frame[31] = animal.tipoCurva; frame[32] = animal.pesoDosis;  // dir. 31 = tipo de curva // dir. 32 = peso dosis
-
-    frame[33] = (tiempo >> 56) & 0xFF; frame[34] = (tiempo >> 48) & 0xFF;  // Timestamp de fecha Inseminacion
-    frame[35] = (tiempo >> 40) & 0xFF; frame[36] = (tiempo >> 32) & 0xFF;  // tamaño 8 bytes
-    frame[37] = (tiempo >> 24) & 0xFF; frame[38] = (tiempo >> 16) & 0xFF;  // desde dir. 33
-    frame[39] = (tiempo >> 8) & 0xFF; frame[40] = tiempo & 0xFF;  // hasta dir. 40
+    frame[33] = (animales_copia[0].fechaServicio >> 56) & 0xFF; frame[34] = (animales_copia[0].fechaServicio >> 48) & 0xFF;  // Timestamp de fecha Inseminacion
+    frame[35] = (animales_copia[0].fechaServicio >> 40) & 0xFF; frame[36] = (animales_copia[0].fechaServicio >> 32) & 0xFF;  // tamaño 8 bytes
+    frame[37] = (animales_copia[0].fechaServicio >> 24) & 0xFF; frame[38] = (animales_copia[0].fechaServicio>> 16) & 0xFF;  // desde dir. 33
+    frame[39] = (animales_copia[0].fechaServicio >> 8) & 0xFF; frame[40] = animales_copia[0].fechaServicio & 0xFF;  // hasta dir. 40
 
     frame[41] = animal.indiceCorporal; frame[42] = animal.agua;  // dir. 41 = indice corporal // dir. 42 = booleano del agua
     frame[43] = animal.cantDosis; frame[44] = ((animal.intervaloMin >> 8) & 0xFF);  // dir. 43 = cantidad dosis // dir. 44 = intervalomin.(byte alto)
@@ -176,7 +171,6 @@ void tarea51(data_animal animal, time_t tiempo) {
     frame[47] = crc & 0xFF; // CRC byte bajo
     frame[48] = crc >> 8;   // CRC byte alto
     send_modbus_request(frame, 49);
-    printf("ya\n");
     vTaskDelay(pdMS_TO_TICKS(200));
     receive_modbus_response(response, BUF_SIZE);
 }
