@@ -96,6 +96,8 @@ extern SemaphoreHandle_t mutex_Tconfiguracion;
 extern time_t copia_Tconfiguracion;
 extern time_t timestamp_relojRTC;
 
+extern uint8_t response[9];
+
 extern ConfigTolva config_actual;
 extern SemaphoreHandle_t mutex_config;
 

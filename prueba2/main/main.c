@@ -18,17 +18,12 @@ void task_modbus_comm(void *param)
     {
         switch (tarea_modbus)
         {
-            case 0: { // Consulta timestamp de animales
+            case 0: { // case para mandar datos de animales
                 printf("MODBUS: Revisar timestamp de animales\n");
 
                 if (xSemaphoreTake(mutex_animales, pdMS_TO_TICKS(100))) {
                     for (uint8_t i = 0; i < 20; i++) {
-                        printf("Animal %d: %s\n", i, animales_actual[i].nombre);
-                        printf("fechaServicio: %lld\n", animales_actual[i].fechaServicio);
-                        // Copiar datos de animales actuales a copia
                         animales_copia[i] = animales_actual[i];
-                        printf("Animal copia %d: %s\n", i, animales_copia[i].nombre);
-                        printf("fechaServicio: %lld\n", animales_copia[i].fechaServicio);
                     }
                     xSemaphoreGive(mutex_animales);
                 } else {
@@ -41,25 +36,77 @@ void task_modbus_comm(void *param)
                 } else {
                     printf("MODBUS: No se pudo tomar el mutex_Tanimales\n");
                 }
-                for(uint8_t i = 0; i < 16; i++) {
-                    printf("Animal %d: %s\n", i, animales_copia[i].nombre);
+                for(uint8_t i = 0; i < 20; i++) {
+                    tarea51(); // Enviar datos de animales
                 }
-                printf("envio modbus:");
-                printf("fechaServicio: %lld\n", animales_copia[0].fechaServicio);
-                tarea51(animales_copia[0], copia_Tanimales); // Enviar datos de animales
                 tarea_modbus = 1; // Cambiar a siguiente tarea
                 break;
             }
 
-            case 1: {
+            case 1: {// case para mandar configuracion
+                if (xSemaphoreTake(mutex_configuracion, pdMS_TO_TICKS(100))) {
+                        configuracion_copia = configuracion_actual;
+                    xSemaphoreGive(mutex_configuracion);
+                } else {
+                    printf("MODBUS: No se pudo tomar el mutex_animales\n");
+                }
+
+                if (xSemaphoreTake(mutex_Tconfiguracion, pdMS_TO_TICKS(100))) {
+                    copia_Tconfiguracion = timestamp_configuracion;
+                    xSemaphoreGive(mutex_Tconfiguracion);
+                } else {
+                    printf("MODBUS: No se pudo tomar el mutex_Tanimales\n");
+                }
+                tarea40();
+                if(response[5]==0xff && response[6]==0xff) {
+                    for(uint8_t i = 0; i < 9; i++) {
+                        response[i]=0;
+                    }
+                    tarea41();
+                    tarea42();
+                    tarea43();
+                    tarea44();
+                    tarea45();
+                }else{
+                    printf("MODBUS: completado al enviar datos de animales\n");
+                }
                 printf("MODBUS: Enviar Configuracion\n");
                 tarea_modbus = 2; // Cambiar a siguiente tarea
                 break;
             }
-            case 2: {
-                printf("MODBUS: Enviar curvas\n");
-                tarea_modbus = 3; // Cambiar a siguiente tarea
+            case 2: {// case para mandar curvas
+                if (xSemaphoreTake(mutex_curvas, pdMS_TO_TICKS(100))) {
+                    for (uint8_t i = 0; i < 5; i++) {
+                        curvas_copia[i] = curvas_actual[i];
+                    }
+                    xSemaphoreGive(mutex_curvas);
+                } else {
+                    printf("MODBUS: No se pudo tomar el mutex_animales\n");
+                }
+
+                if (xSemaphoreTake(mutex_Tcurvas, pdMS_TO_TICKS(100))) {
+                    copia_Tcurvas = timestamp_curvas;
+                    xSemaphoreGive(mutex_Tcurvas);
+                } else {
+                    printf("MODBUS: No se pudo tomar el mutex_Tanimales\n");
+                }
+                tarea60();
+                if(response[5]==0xff && response[6]==0xff) {
+                    for(uint8_t i = 0; i < 9; i++) {
+                        response[i]=0;
+                    }
+                    tarea61();
+                    tarea62();
+                    tarea63();
+                    tarea64();
+                    tarea65();
+                }else{
+                    printf("MODBUS: completado al enviar datos de animales\n");
+                }
+                printf("MODBUS: Enviar Configuracion\n");
+                tarea_modbus = 2; // Cambiar a siguiente tarea
                 break;
+            
             }
             case 3: {
                 printf("MODBUS: Enviar datos RTC\n");
@@ -90,6 +137,7 @@ void task_modbus_comm(void *param)
 
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
+}
 }
 void app_main(void)
 {
