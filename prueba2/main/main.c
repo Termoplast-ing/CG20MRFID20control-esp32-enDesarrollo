@@ -4,7 +4,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/semphr.h"
-
+#include "time.h"
 #include "structyvar.h"
 #include "modbus_master_raw.h"
 #include "uart_rpi.h"
@@ -23,7 +23,12 @@ void task_modbus_comm(void *param)
 
                 if (xSemaphoreTake(mutex_animales, pdMS_TO_TICKS(100))) {
                     for (uint8_t i = 0; i < 20; i++) {
+                        printf("Animal %d: %s\n", i, animales_actual[i].nombre);
+                        printf("fechaServicio: %lld\n", animales_actual[i].fechaServicio);
+                        // Copiar datos de animales actuales a copia
                         animales_copia[i] = animales_actual[i];
+                        printf("Animal copia %d: %s\n", i, animales_copia[i].nombre);
+                        printf("fechaServicio: %lld\n", animales_copia[i].fechaServicio);
                     }
                     xSemaphoreGive(mutex_animales);
                 } else {
@@ -36,16 +41,40 @@ void task_modbus_comm(void *param)
                 } else {
                     printf("MODBUS: No se pudo tomar el mutex_Tanimales\n");
                 }
+                for(uint8_t i = 0; i < 16; i++) {
+                    printf("Animal %d: %s\n", i, animales_copia[i].nombre);
+                }
+                printf("envio modbus:");
+                printf("fechaServicio: %lld\n", animales_copia[0].fechaServicio);
+                tarea51(animales_copia[0], copia_Tanimales); // Enviar datos de animales
+                tarea_modbus = 1; // Cambiar a siguiente tarea
                 break;
             }
 
             case 1: {
-                // Lógica para otra tarea...
+                printf("MODBUS: Enviar Configuracion\n");
+                tarea_modbus = 2; // Cambiar a siguiente tarea
                 break;
             }
-
+            case 2: {
+                printf("MODBUS: Enviar curvas\n");
+                tarea_modbus = 3; // Cambiar a siguiente tarea
+                break;
+            }
+            case 3: {
+                printf("MODBUS: Enviar datos RTC\n");
+                tarea_modbus = 4; // Cambiar a siguiente tarea
+                break;
+            }
+            case 4: {
+                printf("MODBUS: Enviar datos de por si las moscas\n");
+                tarea_modbus = 5; // Cambiar a primera tarea
+                break;
+            }
             // Agregá más casos según necesites...
             default:
+            printf("PUTO EL QUE LEE\n");
+                tarea_modbus = 0; // Reiniciar a la primera tarea
                 break;
         }
 
@@ -64,8 +93,9 @@ void task_modbus_comm(void *param)
 }
 void app_main(void)
 {
+    inicializar_animales_actual_nombre() ;
     printf("INICIO: Iniciando sistema controlador...\n");
-
+printf("fechaServicio: %lld\n", animales_actual[0].fechaServicio);
     // Inicialización de mutex
     mutex_animales = xSemaphoreCreateMutex();
     mutex_Tanimales = xSemaphoreCreateMutex();

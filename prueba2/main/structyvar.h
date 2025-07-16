@@ -11,6 +11,7 @@
 #include <stdbool.h>
 #include "freertos/semphr.h"
 
+void inicializar_animales_actual_nombre(void);
 
 typedef struct {
     int id_tolva;

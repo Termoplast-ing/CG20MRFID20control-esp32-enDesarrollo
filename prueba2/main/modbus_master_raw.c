@@ -157,15 +157,25 @@ void tarea51(data_animal animales_copia, time_t tiempo) {
     frame[27] = animales_copia.nombre[12]; frame[28] = animales_copia.nombre[13];   // desde dir. 15
     frame[29] = animales_copia.nombre[14]; frame[30] = '\0';  // hasta dir. 30
 
+<<<<<<< HEAD
     frame[31] = animales_copia.tipoCurva; frame[32] = animales_copia.pesoDosis;  // dir. 31 = tipo de curva // dir. 32 = peso dosis
+=======
+    frame[31] = animal.tipoCurva; frame[32] = animal.pesoDosis;  // dir. 31 = tipo de curva // dir. 32 = peso dosis
+>>>>>>> 48b6d0d9efde2d9a0448f79c5bd2fc5a4b975ea6
     frame[33] = (animales_copia[0].fechaServicio >> 56) & 0xFF; frame[34] = (animales_copia[0].fechaServicio >> 48) & 0xFF;  // Timestamp de fecha Inseminacion
     frame[35] = (animales_copia[0].fechaServicio >> 40) & 0xFF; frame[36] = (animales_copia[0].fechaServicio >> 32) & 0xFF;  // tamaño 8 bytes
     frame[37] = (animales_copia[0].fechaServicio >> 24) & 0xFF; frame[38] = (animales_copia[0].fechaServicio>> 16) & 0xFF;  // desde dir. 33
     frame[39] = (animales_copia[0].fechaServicio >> 8) & 0xFF; frame[40] = animales_copia[0].fechaServicio & 0xFF;  // hasta dir. 40
 
+<<<<<<< HEAD
     frame[41] = animales_copia.indiceCorporal; frame[42] = animales_copia.agua;  // dir. 41 = indice corporal // dir. 42 = booleano del agua
     frame[43] = animales_copia.cantDosis; frame[44] = ((animales_copia.intervaloMin >> 8) & 0xFF);  // dir. 43 = cantidad dosis // dir. 44 = intervalomin.(byte alto)
     frame[45] = (animales_copia.intervaloMin & 0xFF); frame[46] = 0x00;    // dir. 44 = intervalomin.(byte bajo)
+=======
+    frame[41] = animal.indiceCorporal; frame[42] = animal.agua;  // dir. 41 = indice corporal // dir. 42 = booleano del agua
+    frame[43] = animal.cantDosis; frame[44] = ((animal.intervaloMin >> 8) & 0xFF);  // dir. 43 = cantidad dosis // dir. 44 = intervalomin.(byte alto)
+    frame[45] = (animal.intervaloMin & 0xFF); frame[46] = 0x00;    // dir. 44 = intervalomin.(byte bajo)
+>>>>>>> 48b6d0d9efde2d9a0448f79c5bd2fc5a4b975ea6
 
     crc = modbus_crc16(frame, 47);
     frame[47] = crc & 0xFF; // CRC byte bajo
