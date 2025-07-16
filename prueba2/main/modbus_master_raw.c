@@ -29,13 +29,10 @@
 
 uint16_t modbus_crc16(const uint8_t *buf, int len);
 
+void tarea51(data_animal a, time_t t);
+
 void send_modbus_request(const uint8_t *frame, int len) {
-   // printf("chau");
-   // printf("%d", len);
-   // for(int i = 0; i < len; i++) {
-   //     printf("%d ", frame[i]);
-   // }
-    //printf("\n");
+
     gpio_set_level(GPIO_NUM_4, 1);
     vTaskDelay(pdMS_TO_TICKS(2));
     uart_write_bytes(UART_NUM2, (const char *)frame, len);
@@ -47,16 +44,16 @@ int receive_modbus_response(uint8_t *buf, int maxlen) {
 
     int len = uart_read_bytes(UART_NUM2, buf, maxlen, pdMS_TO_TICKS(200));
     if (len > 0) {
-        printf("Respuesta recibida (%d bytes):\n", len);
         for (int i = 0; i < len; i++) printf("%02X ", buf[i]);
-        printf("\n");
     }
     return len;
 }
 
 void modbus_master_task(void *arg) {
+
+
     
-    uint8_t frame[BUF_SIZE];
+   /* uint8_t frame[BUF_SIZE];
     uint8_t response[BUF_SIZE];
     uint16_t crc;
 
@@ -80,10 +77,10 @@ void modbus_master_task(void *arg) {
     frame[frame[6]-2] = crc & 0xFF; // CRC byte bajo
     frame[frame[6]-1] = crc >> 8;   // CRC byte alto
     send_modbus_request(frame,frame[6]);
-    //printf("ahora si que si\n");
+    printf("ahora si que si\n");
     vTaskDelay(pdMS_TO_TICKS(200));
     receive_modbus_response(response, BUF_SIZE);
-    //printf("delay\n");
+    printf("delay\n");*/
     vTaskDelete(NULL);
 }
 
@@ -124,7 +121,7 @@ uint16_t modbus_crc16(const uint8_t *buf, int len) {
 }
 
     
-void tarea51(data_animal animal, time_t tiempo) {
+void tarea51(data_animal animales_copia, time_t tiempo) {
     uint8_t frame[BUF_SIZE];
     uint8_t response[BUF_SIZE];
     uint16_t crc;
@@ -151,31 +148,658 @@ void tarea51(data_animal animal, time_t tiempo) {
     frame[13] = (tiempo >> 8) & 0xFF;
     frame[14] = tiempo & 0xFF;
 
-    frame[15] = animal.nombre[0]; frame[16] = animal.nombre[1];   // string de numero caravana
-    frame[17] = animal.nombre[2]; frame[18] = animal.nombre[3];   // pasado por caracter 
-    frame[19] = animal.nombre[4]; frame[20] = animal.nombre[5];   // de a un byte
-    frame[21] = animal.nombre[6]; frame[22] = animal.nombre[7];   // 
-    frame[23] = animal.nombre[8]; frame[24] = animal.nombre[9];   // tamaño 16 bytes
-    frame[25] = animal.nombre[10]; frame[26] = animal.nombre[11];   // 
-    frame[27] = animal.nombre[12]; frame[28] = animal.nombre[13];   // desde dir. 15
-    frame[29] = animal.nombre[14]; frame[30] = '\0';  // hasta dir. 30
+    frame[15] = animales_copia.nombre[0]; frame[16] = animales_copia.nombre[1];   // string de numero caravana
+    frame[17] = animales_copia.nombre[2]; frame[18] = animales_copia.nombre[3];   // pasado por caracter 
+    frame[19] = animales_copia.nombre[4]; frame[20] = animales_copia.nombre[5];   // de a un byte
+    frame[21] = animales_copia.nombre[6]; frame[22] = animales_copia.nombre[7];   // 
+    frame[23] = animales_copia.nombre[8]; frame[24] = animales_copia.nombre[9];   // tamaño 16 bytes
+    frame[25] = animales_copia.nombre[10]; frame[26] = animales_copia.nombre[11];   // 
+    frame[27] = animales_copia.nombre[12]; frame[28] = animales_copia.nombre[13];   // desde dir. 15
+    frame[29] = animales_copia.nombre[14]; frame[30] = '\0';  // hasta dir. 30
 
-    frame[31] = animal.tipoCurva; frame[32] = animal.pesoDosis;  // dir. 31 = tipo de curva // dir. 32 = peso dosis
+    frame[31] = animales_copia.tipoCurva; frame[32] = animales_copia.pesoDosis;  // dir. 31 = tipo de curva // dir. 32 = peso dosis
+    frame[33] = (animales_copia[0].fechaServicio >> 56) & 0xFF; frame[34] = (animales_copia[0].fechaServicio >> 48) & 0xFF;  // Timestamp de fecha Inseminacion
+    frame[35] = (animales_copia[0].fechaServicio >> 40) & 0xFF; frame[36] = (animales_copia[0].fechaServicio >> 32) & 0xFF;  // tamaño 8 bytes
+    frame[37] = (animales_copia[0].fechaServicio >> 24) & 0xFF; frame[38] = (animales_copia[0].fechaServicio>> 16) & 0xFF;  // desde dir. 33
+    frame[39] = (animales_copia[0].fechaServicio >> 8) & 0xFF; frame[40] = animales_copia[0].fechaServicio & 0xFF;  // hasta dir. 40
 
-    frame[33] = (tiempo >> 56) & 0xFF; frame[34] = (tiempo >> 48) & 0xFF;  // Timestamp de fecha Inseminacion
-    frame[35] = (tiempo >> 40) & 0xFF; frame[36] = (tiempo >> 32) & 0xFF;  // tamaño 8 bytes
-    frame[37] = (tiempo >> 24) & 0xFF; frame[38] = (tiempo >> 16) & 0xFF;  // desde dir. 33
-    frame[39] = (tiempo >> 8) & 0xFF; frame[40] = tiempo & 0xFF;  // hasta dir. 40
-
-    frame[41] = animal.indiceCorporal; frame[42] = animal.agua;  // dir. 41 = indice corporal // dir. 42 = booleano del agua
-    frame[43] = animal.cantDosis; frame[44] = ((animal.intervaloMin >> 8) & 0xFF);  // dir. 43 = cantidad dosis // dir. 44 = intervalomin.(byte alto)
-    frame[45] = (animal.intervaloMin & 0xFF); frame[46] = 0x00;    // dir. 44 = intervalomin.(byte bajo)
+    frame[41] = animales_copia.indiceCorporal; frame[42] = animales_copia.agua;  // dir. 41 = indice corporal // dir. 42 = booleano del agua
+    frame[43] = animales_copia.cantDosis; frame[44] = ((animales_copia.intervaloMin >> 8) & 0xFF);  // dir. 43 = cantidad dosis // dir. 44 = intervalomin.(byte alto)
+    frame[45] = (animales_copia.intervaloMin & 0xFF); frame[46] = 0x00;    // dir. 44 = intervalomin.(byte bajo)
 
     crc = modbus_crc16(frame, 47);
     frame[47] = crc & 0xFF; // CRC byte bajo
     frame[48] = crc >> 8;   // CRC byte alto
     send_modbus_request(frame, 49);
-    printf("ya\n");
     vTaskDelay(pdMS_TO_TICKS(200));
     receive_modbus_response(response, BUF_SIZE);
 }
+
+void tarea40(configuration configuracion_copia, time_t tiempo) {
+    uint8_t frame[BUF_SIZE];
+    uint8_t response[BUF_SIZE];
+    uint16_t crc;
+
+    frame[0] = SLAVE_ADDR;
+    frame[1] = 0x40; // Función: escribir datos de configuracion
+    frame[2] = 0x00;
+    frame[3] = 0x02; // Dirección inicial
+    frame[4] = 0x00;
+    frame[5] = 10; // Cantidad de registros
+    frame[6] = 20; // Cantidad de bytes (2 registros x 2 bytes)
+
+         // Timestamp de central
+    frame[7] = (tiempo >> 56) & 0xFF;
+    frame[8] = (tiempo >> 48) & 0xFF;
+    frame[9] = (tiempo >> 40) & 0xFF;
+    frame[10] = (tiempo >> 32) & 0xFF;
+    frame[11] = (tiempo >> 24) & 0xFF;
+    frame[12] = (tiempo >> 16) & 0xFF;
+    frame[13] = (tiempo >> 8) & 0xFF;
+    frame[14] = tiempo & 0xFF;
+    frame[15] = configuracion_copia.calibracionMotor;
+    frame[16] = configuracion_copia.calibracionAgua;
+    frame[17] = configuracion_copia.pesoAnimalDesconocido;
+
+     crc = modbus_crc16(frame, 18);
+    frame[18] = crc & 0xFF; // CRC byte bajo
+    frame[19] = crc >> 8;   // CRC byte alto
+    send_modbus_request(frame, 20);
+    vTaskDelay(pdMS_TO_TICKS(200));
+    receive_modbus_response(response, BUF_SIZE);
+}
+
+void tarea41(configuration configuracion_copia, time_t tiempo) {
+    uint8_t frame[BUF_SIZE];
+    uint8_t response[BUF_SIZE];
+    uint16_t crc;
+
+    frame[0] = SLAVE_ADDR;
+    frame[1] = 0x41; // Función: escribir datos de caravanas libres de configuracion
+    frame[2] = 0x00;
+    frame[3] = 0x02; // Dirección inicial
+    frame[4] = 0x00;
+    frame[5] = 45; // Cantidad de registros
+    frame[6] = 89; // Cantidad de bytes (2 registros x 2 bytes)
+
+
+
+    frame[7] = configuracion_copia.caravanaLibre1[0]; frame[8] = configuracion_copia.caravanaLibre1[1];
+    frame[9] = configuracion_copia.caravanaLibre1[2]; frame[10] = configuracion_copia.caravanaLibre1[3];
+    frame[11] = configuracion_copia.caravanaLibre1[4]; frame[12] = configuracion_copia.caravanaLibre1[5];
+    frame[13] = configuracion_copia.caravanaLibre1[6]; frame[14] = configuracion_copia.caravanaLibre1[7];
+    frame[15] = configuracion_copia.caravanaLibre1[8]; frame[16] = configuracion_copia.caravanaLibre1[9];
+    frame[17] = configuracion_copia.caravanaLibre1[10]; frame[18] = configuracion_copia.caravanaLibre1[11];
+    frame[19] = configuracion_copia.caravanaLibre1[12]; frame[20] = configuracion_copia.caravanaLibre1[13];
+    frame[21] = configuracion_copia.caravanaLibre1[14]; frame[22] = configuracion_copia.caravanaLibre1[15]; 
+    frame[23] = configuracion_copia.caravanaLibre2[0]; frame[24] = configuracion_copia.caravanaLibre2[1];
+    frame[25] = configuracion_copia.caravanaLibre2[2]; frame[26] = configuracion_copia.caravanaLibre2[3];
+    frame[27] = configuracion_copia.caravanaLibre2[4]; frame[28] = configuracion_copia.caravanaLibre2[5];
+    frame[29] = configuracion_copia.caravanaLibre2[6]; frame[30] = configuracion_copia.caravanaLibre2[7];
+    frame[31] = configuracion_copia.caravanaLibre2[8]; frame[32] = configuracion_copia.caravanaLibre2[9];
+    frame[33] = configuracion_copia.caravanaLibre2[10]; frame[34] = configuracion_copia.caravanaLibre2[11];
+    frame[35] = configuracion_copia.caravanaLibre2[12]; frame[36] = configuracion_copia.caravanaLibre2[13];
+    frame[37] = configuracion_copia.caravanaLibre2[14]; frame[38] = configuracion_copia.caravanaLibre2[15]; 
+    frame[39] = configuracion_copia.caravanaLibre3[0]; frame[40] = configuracion_copia.caravanaLibre3[1];
+    frame[41] = configuracion_copia.caravanaLibre3[2]; frame[42] = configuracion_copia.caravanaLibre3[3];
+    frame[43] = configuracion_copia.caravanaLibre3[4]; frame[44] = configuracion_copia.caravanaLibre3[5];
+    frame[45] = configuracion_copia.caravanaLibre3[6]; frame[46] = configuracion_copia.caravanaLibre3[7];
+    frame[47] = configuracion_copia.caravanaLibre3[8]; frame[48] = configuracion_copia.caravanaLibre3[9];
+    frame[49] = configuracion_copia.caravanaLibre3[10]; frame[50] = configuracion_copia.caravanaLibre3[11];
+    frame[51] = configuracion_copia.caravanaLibre3[12]; frame[52] = configuracion_copia.caravanaLibre3[13];
+    frame[53] = configuracion_copia.caravanaLibre3[14]; frame[54] = configuracion_copia.caravanaLibre3[15]; 
+    frame[55] = configuracion_copia.caravanaLibre4[0]; frame[56] = configuracion_copia.caravanaLibre4[1];
+    frame[57] = configuracion_copia.caravanaLibre4[2]; frame[58] = configuracion_copia.caravanaLibre4[3];
+    frame[59] = configuracion_copia.caravanaLibre4[4]; frame[60] = configuracion_copia.caravanaLibre4[5];
+    frame[61] = configuracion_copia.caravanaLibre4[6]; frame[62] = configuracion_copia.caravanaLibre4[7];
+    frame[63] = configuracion_copia.caravanaLibre4[8]; frame[64] = configuracion_copia.caravanaLibre4[9];
+    frame[65] = configuracion_copia.caravanaLibre4[10]; frame[66] = configuracion_copia.caravanaLibre4[11];
+    frame[67] = configuracion_copia.caravanaLibre4[12]; frame[68] = configuracion_copia.caravanaLibre4[13];
+    frame[69] = configuracion_copia.caravanaLibre4[14]; frame[70] = configuracion_copia.caravanaLibre4[15]; 
+    frame[71] = configuracion_copia.caravanaLibre5[0]; frame[72] = configuracion_copia.caravanaLibre5[1];
+    frame[73] = configuracion_copia.caravanaLibre5[2]; frame[74] = configuracion_copia.caravanaLibre5[3];
+    frame[75] = configuracion_copia.caravanaLibre5[4]; frame[76] = configuracion_copia.caravanaLibre5[5];
+    frame[77] = configuracion_copia.caravanaLibre5[6]; frame[78] = configuracion_copia.caravanaLibre5[7];
+    frame[79] = configuracion_copia.caravanaLibre5[8]; frame[80] = configuracion_copia.caravanaLibre5[9];
+    frame[81] = configuracion_copia.caravanaLibre5[10]; frame[82] = configuracion_copia.caravanaLibre5[11];
+    frame[83] = configuracion_copia.caravanaLibre5[12]; frame[84] = configuracion_copia.caravanaLibre5[13];
+    frame[85] = configuracion_copia.caravanaLibre5[14]; frame[86] = configuracion_copia.caravanaLibre5[15]; 
+    
+    crc = modbus_crc16(frame, 87);
+    frame[87] = crc & 0xFF; // CRC byte bajo
+    frame[88] = crc >> 8;   // CRC byte alto
+    send_modbus_request(frame, 89);
+    vTaskDelay(pdMS_TO_TICKS(200));
+    receive_modbus_response(response, BUF_SIZE);
+}
+
+void tarea60(tipo_curva curvas_copia, time_t tiempo) {
+    uint8_t frame[BUF_SIZE];
+    uint8_t response[BUF_SIZE];
+    uint16_t crc;
+
+    frame[0] = SLAVE_ADDR;
+    frame[1] = 0x60; // Función: escribir datos de caravanas libres de configuracion
+    frame[2] = 0x00;
+    frame[3] = 0x02; // Dirección inicial
+    frame[4] = 0x00;
+    frame[5] = 9; // Cantidad de registros
+    frame[6] = 17; // Cantidad de bytes (2 registros x 2 bytes)
+
+              // Timestamp de central
+    frame[7] = (tiempo >> 56) & 0xFF;
+    frame[8] = (tiempo >> 48) & 0xFF;
+    frame[9] = (tiempo >> 40) & 0xFF;
+    frame[10] = (tiempo >> 32) & 0xFF;
+    frame[11] = (tiempo >> 24) & 0xFF;
+    frame[12] = (tiempo >> 16) & 0xFF;
+    frame[13] = (tiempo >> 8) & 0xFF;
+    frame[14] = tiempo & 0xFF;
+
+    crc = modbus_crc16(frame, 15);
+    frame[15] = crc & 0xFF; // CRC byte bajo
+    frame[16] = crc >> 8;   // CRC byte alto
+    send_modbus_request(frame, 17);
+    vTaskDelay(pdMS_TO_TICKS(200));
+    receive_modbus_response(response, BUF_SIZE);
+}
+
+void tarea61(tipo_curva curvas_copia, time_t tiempo) {
+    uint8_t frame[BUF_SIZE];
+    uint8_t response[BUF_SIZE];
+    uint16_t crc;
+
+    frame[0] = SLAVE_ADDR;
+    frame[1] = 0x61; // Función: escribir datos de caravanas libres de configuracion
+    frame[2] = 0x00;
+    frame[3] = 0x02; // Dirección inicial
+    frame[4] = 0x00;
+    frame[5] = 22; // Cantidad de registros
+    frame[6] = 43; // Cantidad de bytes (2 registros x 2 bytes)
+
+    pos = 7;    
+    for(int i=0; i<17; i++) {
+        frame[pos++] = curvas_copia[0].segmentos[i].inicio;
+        frame[pos++] = curvas_copia[0].segmentos[i].fin; 
+    }
+
+    crc = modbus_crc16(frame, 41);
+    frame[41] = crc & 0xFF; // CRC byte bajo
+    frame[42] = crc >> 8;   // CRC byte alto
+    send_modbus_request(frame, 43);
+    vTaskDelay(pdMS_TO_TICKS(200));
+    receive_modbus_response(response, BUF_SIZE);
+}
+
+void tarea62(tipo_curva curvas_copia, time_t tiempo) {
+    uint8_t frame[BUF_SIZE];
+    uint8_t response[BUF_SIZE];
+    uint16_t crc;
+
+    frame[0] = SLAVE_ADDR;
+    frame[1] = 0x62; // Función: escribir datos de caravanas libres de configuracion
+    frame[2] = 0x00;
+    frame[3] = 0x02; // Dirección inicial
+    frame[4] = 0x00;
+    frame[5] = 22; // Cantidad de registros
+    frame[6] = 43; // Cantidad de bytes (2 registros x 2 bytes)
+
+    pos = 7;    
+    for(int i=0; i<17; i++) {
+        frame[pos++] = curvas_copia[1].segmentos[i].inicio;
+        frame[pos++] = curvas_copia[1].segmentos[i].fin; 
+    }
+
+    crc = modbus_crc16(frame, 41);
+    frame[41] = crc & 0xFF; // CRC byte bajo
+    frame[42] = crc >> 8;   // CRC byte alto
+    send_modbus_request(frame, 43);
+    vTaskDelay(pdMS_TO_TICKS(200));
+    receive_modbus_response(response, BUF_SIZE);
+}
+
+void tarea63(tipo_curva curvas_copia, time_t tiempo) {
+    uint8_t frame[BUF_SIZE];
+    uint8_t response[BUF_SIZE];
+    uint16_t crc;
+
+    frame[0] = SLAVE_ADDR;
+    frame[1] = 0x63; // Función: escribir datos de caravanas libres de configuracion
+    frame[2] = 0x00;
+    frame[3] = 0x02; // Dirección inicial
+    frame[4] = 0x00;
+    frame[5] = 22; // Cantidad de registros
+    frame[6] = 43; // Cantidad de bytes (2 registros x 2 bytes)
+
+    pos = 7;    
+    for(int i=0; i<17; i++) {
+        frame[pos++] = curvas_copia[2].segmentos[i].inicio;
+        frame[pos++] = curvas_copia[2].segmentos[i].fin; 
+    }
+
+    crc = modbus_crc16(frame, 41);
+    frame[41] = crc & 0xFF; // CRC byte bajo
+    frame[42] = crc >> 8;   // CRC byte alto
+    send_modbus_request(frame, 43);
+    vTaskDelay(pdMS_TO_TICKS(200));
+    receive_modbus_response(response, BUF_SIZE);
+}
+
+void tarea64(tipo_curva curvas_copia, time_t tiempo) {
+    uint8_t frame[BUF_SIZE];
+    uint8_t response[BUF_SIZE];
+    uint16_t crc;
+
+    frame[0] = SLAVE_ADDR;
+    frame[1] = 0x64; // Función: escribir datos de caravanas libres de configuracion
+    frame[2] = 0x00;
+    frame[3] = 0x02; // Dirección inicial
+    frame[4] = 0x00;
+    frame[5] = 22; // Cantidad de registros
+    frame[6] = 43; // Cantidad de bytes (2 registros x 2 bytes)
+
+    pos = 7;    
+    for(int i=0; i<17; i++) {
+        frame[pos++] = curvas_copia[3].segmentos[i].inicio;
+        frame[pos++] = curvas_copia[3].segmentos[i].fin; 
+    }
+
+    crc = modbus_crc16(frame, 41);
+    frame[41] = crc & 0xFF; // CRC byte bajo
+    frame[42] = crc >> 8;   // CRC byte alto
+    send_modbus_request(frame, 43);
+    vTaskDelay(pdMS_TO_TICKS(200));
+    receive_modbus_response(response, BUF_SIZE);
+}
+
+void tarea65(tipo_curva curvas_copia, time_t tiempo) {
+    uint8_t frame[BUF_SIZE];
+    uint8_t response[BUF_SIZE];
+    uint16_t crc;
+
+    frame[0] = SLAVE_ADDR;
+    frame[1] = 0x65; // Función: escribir datos de caravanas libres de configuracion
+    frame[2] = 0x00;
+    frame[3] = 0x02; // Dirección inicial
+    frame[4] = 0x00;
+    frame[5] = 22; // Cantidad de registros
+    frame[6] = 43; // Cantidad de bytes (2 registros x 2 bytes)
+
+    pos = 7;    
+    for(int i=0; i<17; i++) {
+        frame[pos++] = curvas_copia[4].segmentos[i].inicio;
+        frame[pos++] = curvas_copia[4].segmentos[i].fin; 
+    }
+
+    crc = modbus_crc16(frame, 41);
+    frame[41] = crc & 0xFF; // CRC byte bajo
+    frame[42] = crc >> 8;   // CRC byte alto
+    send_modbus_request(frame, 43);
+    vTaskDelay(pdMS_TO_TICKS(200));
+    receive_modbus_response(response, BUF_SIZE);
+}
+
+void tarea70(reloj rtc, time_t tiempo) {
+    uint8_t frame[BUF_SIZE];
+    uint8_t response[BUF_SIZE];
+    uint16_t crc;
+
+    frame[0] = SLAVE_ADDR;
+    frame[1] = 0x70; // Función: escribir datos de configuracion
+    frame[2] = 0x00;
+    frame[3] = 0x02; // Dirección inicial
+    frame[4] = 0x00;
+    frame[5] = 9; // Cantidad de registros
+    frame[6] = 17; // Cantidad de bytes (2 registros x 2 bytes)
+
+             // Timestamp de central
+    frame[7] = (tiempo >> 56) & 0xFF;
+    frame[8] = (tiempo >> 48) & 0xFF;
+    frame[9] = (tiempo >> 40) & 0xFF;
+    frame[10] = (tiempo >> 32) & 0xFF;
+    frame[11] = (tiempo >> 24) & 0xFF;
+    frame[12] = (tiempo >> 16) & 0xFF;
+    frame[13] = (tiempo >> 8) & 0xFF;
+    frame[14] = tiempo & 0xFF;
+    crc = modbus_crc16(frame, 15);
+    frame[15] = crc & 0xFF; // CRC byte bajo
+    frame[16] = crc >> 8;   // CRC byte alto
+    send_modbus_request(frame, 17);
+    vTaskDelay(pdMS_TO_TICKS(200));
+    receive_modbus_response(response, BUF_SIZE);
+}
+
+
+void tarea80(data_animal_leido animales_leidos_copia, time_t tiempo) {
+    uint8_t frame[BUF_SIZE];
+    uint8_t response[BUF_SIZE];
+    uint16_t crc;
+
+    frame[0] = SLAVE_ADDR;
+    frame[1] = 0x80; // Función: mandar timestamp de animales leidos para verificar cola
+    frame[2] = 0x00;
+    frame[3] = 0x02; // Dirección inicial
+    frame[4] = 0x00;
+    frame[5] = 9; // Cantidad de registros
+    frame[6] = 17; // Cantidad de bytes (2 registros x 2 bytes)
+
+         // Timestamp de central
+    frame[7] = (tiempo >> 56) & 0xFF;
+    frame[8] = (tiempo >> 48) & 0xFF;
+    frame[9] = (tiempo >> 40) & 0xFF;
+    frame[10] = (tiempo >> 32) & 0xFF;
+    frame[11] = (tiempo >> 24) & 0xFF;
+    frame[12] = (tiempo >> 16) & 0xFF;
+    frame[13] = (tiempo >> 8) & 0xFF;
+    frame[14] = tiempo & 0xFF;
+    crc = modbus_crc16(frame, 15);
+    frame[15] = crc & 0xFF; // CRC byte bajo
+    frame[16] = crc >> 8;   // CRC byte alto
+    send_modbus_request(frame, 17);
+    vTaskDelay(pdMS_TO_TICKS(200));
+    receive_modbus_response(response, BUF_SIZE);   
+}
+
+void tarea81(data_animal_leido animales_leidos_copia, time_t tiempo) {
+    uint8_t frame[BUF_SIZE];
+    uint8_t response[BUF_SIZE];
+    uint16_t crc;
+
+    frame[0] = SLAVE_ADDR;
+    frame[1] = 0x81; // Función: mandar timestamp de animales leidos para verificar cola
+    frame[2] = 0x00;
+    frame[3] = 0x02; // Dirección inicial
+    frame[4] = 0x00;
+    frame[5] = 9; // Cantidad de registros
+    frame[6] = 17; // Cantidad de bytes (2 registros x 2 bytes)
+
+         // Timestamp de central
+    frame[7] = (tiempo >> 56) & 0xFF;
+    frame[8] = (tiempo >> 48) & 0xFF;
+    frame[9] = (tiempo >> 40) & 0xFF;
+    frame[10] = (tiempo >> 32) & 0xFF;
+    frame[11] = (tiempo >> 24) & 0xFF;
+    frame[12] = (tiempo >> 16) & 0xFF;
+    frame[13] = (tiempo >> 8) & 0xFF;
+    frame[14] = tiempo & 0xFF;
+    crc = modbus_crc16(frame, 15);
+    frame[15] = crc & 0xFF; // CRC byte bajo
+    frame[16] = crc >> 8;   // CRC byte alto
+    send_modbus_request(frame, 17);
+    vTaskDelay(pdMS_TO_TICKS(200));
+    receive_modbus_response(response, BUF_SIZE);   
+}
+
+void tarea82(data_animal_leido animales_leidos_copia, time_t tiempo) {
+    uint8_t frame[BUF_SIZE];
+    uint8_t response[BUF_SIZE];
+    uint16_t crc;
+
+    frame[0] = SLAVE_ADDR;
+    frame[1] = 0x82; // Función: mandar timestamp de animales leidos para verificar cola
+    frame[2] = 0x00;
+    frame[3] = 0x02; // Dirección inicial
+    frame[4] = 0x00;
+    frame[5] = 9; // Cantidad de registros
+    frame[6] = 17; // Cantidad de bytes (2 registros x 2 bytes)
+
+         // Timestamp de central
+    frame[7] = (tiempo >> 56) & 0xFF;
+    frame[8] = (tiempo >> 48) & 0xFF;
+    frame[9] = (tiempo >> 40) & 0xFF;
+    frame[10] = (tiempo >> 32) & 0xFF;
+    frame[11] = (tiempo >> 24) & 0xFF;
+    frame[12] = (tiempo >> 16) & 0xFF;
+    frame[13] = (tiempo >> 8) & 0xFF;
+    frame[14] = tiempo & 0xFF;
+    crc = modbus_crc16(frame, 15);
+    frame[15] = crc & 0xFF; // CRC byte bajo
+    frame[16] = crc >> 8;   // CRC byte alto
+    send_modbus_request(frame, 17);
+    vTaskDelay(pdMS_TO_TICKS(200));
+    receive_modbus_response(response, BUF_SIZE);   
+}
+
+void tarea83(data_animal_leido animales_leidos_copia, time_t tiempo) {
+    uint8_t frame[BUF_SIZE];
+    uint8_t response[BUF_SIZE];
+    uint16_t crc;
+
+    frame[0] = SLAVE_ADDR;
+    frame[1] = 0x83; // Función: mandar timestamp de animales leidos para verificar cola
+    frame[2] = 0x00;
+    frame[3] = 0x02; // Dirección inicial
+    frame[4] = 0x00;
+    frame[5] = 9; // Cantidad de registros
+    frame[6] = 17; // Cantidad de bytes (2 registros x 2 bytes)
+
+         // Timestamp de central
+    frame[7] = (tiempo >> 56) & 0xFF;
+    frame[8] = (tiempo >> 48) & 0xFF;
+    frame[9] = (tiempo >> 40) & 0xFF;
+    frame[10] = (tiempo >> 32) & 0xFF;
+    frame[11] = (tiempo >> 24) & 0xFF;
+    frame[12] = (tiempo >> 16) & 0xFF;
+    frame[13] = (tiempo >> 8) & 0xFF;
+    frame[14] = tiempo & 0xFF;
+    crc = modbus_crc16(frame, 15);
+    frame[15] = crc & 0xFF; // CRC byte bajo
+    frame[16] = crc >> 8;   // CRC byte alto
+    send_modbus_request(frame, 17);
+    vTaskDelay(pdMS_TO_TICKS(200));
+    receive_modbus_response(response, BUF_SIZE);   
+}
+
+void tarea84(data_animal_leido animales_leidos_copia, time_t tiempo) {
+    uint8_t frame[BUF_SIZE];
+    uint8_t response[BUF_SIZE];
+    uint16_t crc;
+
+    frame[0] = SLAVE_ADDR;
+    frame[1] = 0x84; // Función: mandar timestamp de animales leidos para verificar cola
+    frame[2] = 0x00;
+    frame[3] = 0x02; // Dirección inicial
+    frame[4] = 0x00;
+    frame[5] = 9; // Cantidad de registros
+    frame[6] = 17; // Cantidad de bytes (2 registros x 2 bytes)
+
+         // Timestamp de central
+    frame[7] = (tiempo >> 56) & 0xFF;
+    frame[8] = (tiempo >> 48) & 0xFF;
+    frame[9] = (tiempo >> 40) & 0xFF;
+    frame[10] = (tiempo >> 32) & 0xFF;
+    frame[11] = (tiempo >> 24) & 0xFF;
+    frame[12] = (tiempo >> 16) & 0xFF;
+    frame[13] = (tiempo >> 8) & 0xFF;
+    frame[14] = tiempo & 0xFF;
+    crc = modbus_crc16(frame, 15);
+    frame[15] = crc & 0xFF; // CRC byte bajo
+    frame[16] = crc >> 8;   // CRC byte alto
+    send_modbus_request(frame, 17);
+    vTaskDelay(pdMS_TO_TICKS(200));
+    receive_modbus_response(response, BUF_SIZE);   
+}
+
+void tarea85(data_animal_leido animales_leidos_copia, time_t tiempo) {
+    uint8_t frame[BUF_SIZE];
+    uint8_t response[BUF_SIZE];
+    uint16_t crc;
+
+    frame[0] = SLAVE_ADDR;
+    frame[1] = 0x85; // Función: mandar timestamp de animales leidos para verificar cola
+    frame[2] = 0x00;
+    frame[3] = 0x02; // Dirección inicial
+    frame[4] = 0x00;
+    frame[5] = 9; // Cantidad de registros
+    frame[6] = 17; // Cantidad de bytes (2 registros x 2 bytes)
+
+         // Timestamp de central
+    frame[7] = (tiempo >> 56) & 0xFF;
+    frame[8] = (tiempo >> 48) & 0xFF;
+    frame[9] = (tiempo >> 40) & 0xFF;
+    frame[10] = (tiempo >> 32) & 0xFF;
+    frame[11] = (tiempo >> 24) & 0xFF;
+    frame[12] = (tiempo >> 16) & 0xFF;
+    frame[13] = (tiempo >> 8) & 0xFF;
+    frame[14] = tiempo & 0xFF;
+    crc = modbus_crc16(frame, 15);
+    frame[15] = crc & 0xFF; // CRC byte bajo
+    frame[16] = crc >> 8;   // CRC byte alto
+    send_modbus_request(frame, 17);
+    vTaskDelay(pdMS_TO_TICKS(200));
+    receive_modbus_response(response, BUF_SIZE);   
+}
+
+void tarea86(data_animal_leido animales_leidos_copia, time_t tiempo) {
+    uint8_t frame[BUF_SIZE];
+    uint8_t response[BUF_SIZE];
+    uint16_t crc;
+
+    frame[0] = SLAVE_ADDR;
+    frame[1] = 0x86; // Función: mandar timestamp de animales leidos para verificar cola
+    frame[2] = 0x00;
+    frame[3] = 0x02; // Dirección inicial
+    frame[4] = 0x00;
+    frame[5] = 9; // Cantidad de registros
+    frame[6] = 17; // Cantidad de bytes (2 registros x 2 bytes)
+
+         // Timestamp de central
+    frame[7] = (tiempo >> 56) & 0xFF;
+    frame[8] = (tiempo >> 48) & 0xFF;
+    frame[9] = (tiempo >> 40) & 0xFF;
+    frame[10] = (tiempo >> 32) & 0xFF;
+    frame[11] = (tiempo >> 24) & 0xFF;
+    frame[12] = (tiempo >> 16) & 0xFF;
+    frame[13] = (tiempo >> 8) & 0xFF;
+    frame[14] = tiempo & 0xFF;
+    crc = modbus_crc16(frame, 15);
+    frame[15] = crc & 0xFF; // CRC byte bajo
+    frame[16] = crc >> 8;   // CRC byte alto
+    send_modbus_request(frame, 17);
+    vTaskDelay(pdMS_TO_TICKS(200));
+    receive_modbus_response(response, BUF_SIZE);   
+}
+
+void tarea87(data_animal_leido animales_leidos_copia, time_t tiempo) {
+    uint8_t frame[BUF_SIZE];
+    uint8_t response[BUF_SIZE];
+    uint16_t crc;
+
+    frame[0] = SLAVE_ADDR;
+    frame[1] = 0x87; // Función: mandar timestamp de animales leidos para verificar cola
+    frame[2] = 0x00;
+    frame[3] = 0x02; // Dirección inicial
+    frame[4] = 0x00;
+    frame[5] = 9; // Cantidad de registros
+    frame[6] = 17; // Cantidad de bytes (2 registros x 2 bytes)
+
+         // Timestamp de central
+    frame[7] = (tiempo >> 56) & 0xFF;
+    frame[8] = (tiempo >> 48) & 0xFF;
+    frame[9] = (tiempo >> 40) & 0xFF;
+    frame[10] = (tiempo >> 32) & 0xFF;
+    frame[11] = (tiempo >> 24) & 0xFF;
+    frame[12] = (tiempo >> 16) & 0xFF;
+    frame[13] = (tiempo >> 8) & 0xFF;
+    frame[14] = tiempo & 0xFF;
+    crc = modbus_crc16(frame, 15);
+    frame[15] = crc & 0xFF; // CRC byte bajo
+    frame[16] = crc >> 8;   // CRC byte alto
+    send_modbus_request(frame, 17);
+    vTaskDelay(pdMS_TO_TICKS(200));
+    receive_modbus_response(response, BUF_SIZE);   
+}
+
+void tarea88(data_animal_leido animales_leidos_copia, time_t tiempo) {
+    uint8_t frame[BUF_SIZE];
+    uint8_t response[BUF_SIZE];
+    uint16_t crc;
+
+    frame[0] = SLAVE_ADDR;
+    frame[1] = 0x88; // Función: mandar timestamp de animales leidos para verificar cola
+    frame[2] = 0x00;
+    frame[3] = 0x02; // Dirección inicial
+    frame[4] = 0x00;
+    frame[5] = 9; // Cantidad de registros
+    frame[6] = 17; // Cantidad de bytes (2 registros x 2 bytes)
+
+         // Timestamp de central
+    frame[7] = (tiempo >> 56) & 0xFF;
+    frame[8] = (tiempo >> 48) & 0xFF;
+    frame[9] = (tiempo >> 40) & 0xFF;
+    frame[10] = (tiempo >> 32) & 0xFF;
+    frame[11] = (tiempo >> 24) & 0xFF;
+    frame[12] = (tiempo >> 16) & 0xFF;
+    frame[13] = (tiempo >> 8) & 0xFF;
+    frame[14] = tiempo & 0xFF;
+    crc = modbus_crc16(frame, 15);
+    frame[15] = crc & 0xFF; // CRC byte bajo
+    frame[16] = crc >> 8;   // CRC byte alto
+    send_modbus_request(frame, 17);
+    vTaskDelay(pdMS_TO_TICKS(200));
+    receive_modbus_response(response, BUF_SIZE);   
+}
+
+void tarea89(data_animal_leido animales_leidos_copia, time_t tiempo) {
+    uint8_t frame[BUF_SIZE];
+    uint8_t response[BUF_SIZE];
+    uint16_t crc;
+
+    frame[0] = SLAVE_ADDR;
+    frame[1] = 0x89; // Función: mandar timestamp de animales leidos para verificar cola
+    frame[2] = 0x00;
+    frame[3] = 0x02; // Dirección inicial
+    frame[4] = 0x00;
+    frame[5] = 9; // Cantidad de registros
+    frame[6] = 17; // Cantidad de bytes (2 registros x 2 bytes)
+
+         // Timestamp de central
+    frame[7] = (tiempo >> 56) & 0xFF;
+    frame[8] = (tiempo >> 48) & 0xFF;
+    frame[9] = (tiempo >> 40) & 0xFF;
+    frame[10] = (tiempo >> 32) & 0xFF;
+    frame[11] = (tiempo >> 24) & 0xFF;
+    frame[12] = (tiempo >> 16) & 0xFF;
+    frame[13] = (tiempo >> 8) & 0xFF;
+    frame[14] = tiempo & 0xFF;
+    crc = modbus_crc16(frame, 15);
+    frame[15] = crc & 0xFF; // CRC byte bajo
+    frame[16] = crc >> 8;   // CRC byte alto
+    send_modbus_request(frame, 17);
+    vTaskDelay(pdMS_TO_TICKS(200));
+    receive_modbus_response(response, BUF_SIZE);   
+}
+
+/*void tarea90(data_animal_leido animales_leidos_copia, time_t tiempo) {
+    uint8_t frame[BUF_SIZE];
+    uint8_t response[BUF_SIZE];
+    uint16_t crc;
+
+    frame[0] = SLAVE_ADDR;
+    frame[1] = 0x90; // Función: escribir datos de animales leidos
+    frame[2] = 0x00;
+    frame[3] = 0x02; // Dirección inicial
+    frame[4] = 0x00;
+    frame[5] = 17; // Cantidad de registros
+    frame[6] = 34; // Cantidad de bytes (2 registros x 2 bytes)
+
+    frame[7] = animales_leidos_copia[0].nombre[0]; frame[8] = animales_leidos_copia[0].nombre[1];
+    frame[9] = animales_leidos_copia[0].nombre[2]; frame[10] = animales_leidos_copia[0].nombre[3];
+    frame[11] = animales_leidos_copia[0].nombre[4]; frame[12] = animales_leidos_copia[0].nombre[5];
+    frame[13] = animales_leidos_copia[0].nombre[6]; frame[14] = animales_leidos_copia[0].nombre[7];
+    frame[15] = animales_leidos_copia[0].nombre[8]; frame[16] = animales_leidos_copia[0].nombre[9];
+    frame[17] = animales_leidos_copia[0].nombre[10]; frame[18] = animales_leidos_copia[0].nombre[11];
+    frame[19] = animales_leidos_copia[0].nombre[12]; frame[20] = animales_leidos_copia[0].nombre[13];
+    frame[21] = animales_leidos_copia[0].nombre[14]; frame[22] = '\0';
+    frame[23] = (animales_leidos_copia[0].fechaDispensado >> 56) & 0xFF; frame[24] = (animales_leidos_copia[0].fechaDispensado >> 48) & 0xFF;  // Timestamp de fecha dispensado
+    frame[25] = (animales_leidos_copia[0].fechaDispensado >> 40) & 0xFF; frame[26] = (animales_leidos_copia[0].fechaDispensado >> 32) & 0xFF; 
+    frame[27] = (animales_leidos_copia[0].fechaDispensado >> 24) & 0xFF; frame[28] = (animales_leidos_copia[0].fechaDispensado >> 16) & 0xFF;  
+    frame[29] = (animales_leidos_copia[0].fechaDispensado >> 8) & 0xFF; frame[30] = animales_leidos_copia[0].fechaDispensado & 0xFF;  
+    frame[31] = animales_leidos_copia[0].pesoDispensado; 
+    crc = modbus_crc16(frame, 32);
+    frame[32] = crc & 0xFF; // CRC byte bajo
+    frame[33] = crc >> 8;   // CRC byte alto
+    send_modbus_request(frame, 34);
+    vTaskDelay(pdMS_TO_TICKS(200));
+    receive_modbus_response(response, BUF_SIZE);
+}*/
