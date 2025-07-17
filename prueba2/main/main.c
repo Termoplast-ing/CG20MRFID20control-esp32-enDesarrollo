@@ -129,8 +129,8 @@ void task_modbus_comm(void *param)
                     }
                     tarea81();
                 tarea_modbus = 0; // Cambiar a primera tarea
-                break;
                 }
+            break;
             }
 
 

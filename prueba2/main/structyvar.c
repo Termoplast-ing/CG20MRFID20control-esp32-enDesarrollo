@@ -9,6 +9,7 @@
 configuration configuracion_actual = {0};
 configuration configuracion_copia = {0};
 SemaphoreHandle_t mutex_configuracion = NULL;
+uint8_t response[9] = {0}; // Respuesta del Modbus
 
 // === ANIMALES ===
 data_animal animales_actual[20] = {0};

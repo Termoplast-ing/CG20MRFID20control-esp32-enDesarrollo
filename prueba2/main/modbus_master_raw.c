@@ -506,7 +506,8 @@ void tarea81() {
     uint8_t frame[BUF_SIZE];
     uint8_t response[BUF_SIZE];
     uint16_t crc;
-
+    data_animal_leido animales_leidos_aux [3];
+    int total_animales_leidos = 0;
     // --- Ejemplo: Leer 4 registros desde el esclavo ---
     frame[0] = SLAVE_ADDR;
     frame[1] = 0x03; // Función: Leer registros
@@ -519,9 +520,41 @@ void tarea81() {
     frame[7] = crc >> 8;
     send_modbus_request(frame, 8);
     vTaskDelay(pdMS_TO_TICKS(200));
-    receive_modbus_response(response, BUF_SIZE); 
-}
+    receive_modbus_response(response, BUF_SIZE);
 
+    for (int i = 0; i < 3; i++) {
+    bool caravana_vacia = true;
+     for (int j = 0; j < 15; j++) {
+        if (response[6 + (i * 25) + j] != '0') {
+            caravana_vacia = false;
+            break;
+        }
+    }
+    if (caravana_vacia == false) {
+        for (int j = 0; j < 15; j++) {
+            animales_leidos_aux[i].nombre[j] = response[6 + (i * 25) + j];
+
+        }
+        animales_leidos_aux[i].fechaDispensado = animales_leidos_aux[i].fechaDispensado | ((response[6+(i*25)+16]) << 56);
+        animales_leidos_aux[i].fechaDispensado = animales_leidos_aux[i].fechaDispensado | ((response[6+(i*25)+17]) << 48);
+        animales_leidos_aux[i].fechaDispensado = animales_leidos_aux[i].fechaDispensado | ((response[6+(i*25)+18]) << 40);
+        animales_leidos_aux[i].fechaDispensado = animales_leidos_aux[i].fechaDispensado | ((response[6+(i*25)+19]) << 32);
+        animales_leidos_aux[i].fechaDispensado = animales_leidos_aux[i].fechaDispensado | ((response[6+(i*25)+20]) << 24);
+        animales_leidos_aux[i].fechaDispensado = animales_leidos_aux[i].fechaDispensado | ((response[6+(i*25)+21]) << 16);
+        animales_leidos_aux[i].fechaDispensado = animales_leidos_aux[i].fechaDispensado | ((response[6+(i*25)+22]) << 8);
+        animales_leidos_aux[i].fechaDispensado = animales_leidos_aux[i].fechaDispensado | ((response[6+(i*25)+23]));
+        animales_leidos_aux[i].pesoDispensado = response[6+(i*25)+24];
+
+        if(total_animales_leidos < 100){
+            animales_leidos_copia[total_animales_leidos] = animales_leidos_aux[i];
+            total_animales_leidos++;
+             }
+        }
+    }
+    for(int i = 0; i < 3; i++){
+    memset(&animales_leidos_aux[i], 0, sizeof(data_animal_leido));
+    }
+}
 /*
 void tarea82(data_animal_leido animales_leidos_copia, time_t tiempo) {
     uint8_t frame[BUF_SIZE];
