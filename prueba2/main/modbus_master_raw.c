@@ -29,8 +29,6 @@
 
 uint16_t modbus_crc16(const uint8_t *buf, int len);
 
-void tarea51(data_animal a, time_t t);
-
 void send_modbus_request(const uint8_t *frame, int len) {
 
     gpio_set_level(GPIO_NUM_4, 1);
@@ -121,7 +119,7 @@ uint16_t modbus_crc16(const uint8_t *buf, int len) {
 }
 
     
-void tarea51(data_animal animales_copia, time_t tiempo) {
+void tarea51() {
     uint8_t frame[BUF_SIZE];
     uint8_t response[BUF_SIZE];
     uint16_t crc;
@@ -139,43 +137,33 @@ void tarea51(data_animal animales_copia, time_t tiempo) {
     //snprintf((char *)&frame[17], sizeof(frame) - 17, "%s", animal.nombre);
 
         // Timestamp de central
-    frame[7] = (tiempo >> 56) & 0xFF;
-    frame[8] = (tiempo >> 48) & 0xFF;
-    frame[9] = (tiempo >> 40) & 0xFF;
-    frame[10] = (tiempo >> 32) & 0xFF;
-    frame[11] = (tiempo >> 24) & 0xFF;
-    frame[12] = (tiempo >> 16) & 0xFF;
-    frame[13] = (tiempo >> 8) & 0xFF;
-    frame[14] = tiempo & 0xFF;
+    frame[7] = (copia_Tanimales >> 56) & 0xFF;
+    frame[8] = (copia_Tanimales >> 48) & 0xFF;
+    frame[9] = (copia_Tanimales >> 40) & 0xFF;
+    frame[10] = (copia_Tanimales >> 32) & 0xFF;
+    frame[11] = (copia_Tanimales >> 24) & 0xFF;
+    frame[12] = (copia_Tanimales >> 16) & 0xFF;
+    frame[13] = (copia_Tanimales >> 8) & 0xFF;
+    frame[14] = copia_Tanimales & 0xFF;
 
-    frame[15] = animales_copia.nombre[0]; frame[16] = animales_copia.nombre[1];   // string de numero caravana
-    frame[17] = animales_copia.nombre[2]; frame[18] = animales_copia.nombre[3];   // pasado por caracter 
-    frame[19] = animales_copia.nombre[4]; frame[20] = animales_copia.nombre[5];   // de a un byte
-    frame[21] = animales_copia.nombre[6]; frame[22] = animales_copia.nombre[7];   // 
-    frame[23] = animales_copia.nombre[8]; frame[24] = animales_copia.nombre[9];   // tamaño 16 bytes
-    frame[25] = animales_copia.nombre[10]; frame[26] = animales_copia.nombre[11];   // 
-    frame[27] = animales_copia.nombre[12]; frame[28] = animales_copia.nombre[13];   // desde dir. 15
-    frame[29] = animales_copia.nombre[14]; frame[30] = '\0';  // hasta dir. 30
+    frame[15] = animales_copia[0].nombre[0]; frame[16] = animales_copia[0].nombre[1];   // string de numero caravana
+    frame[17] = animales_copia[0].nombre[2]; frame[18] = animales_copia[0].nombre[3];   // pasado por caracter 
+    frame[19] = animales_copia[0].nombre[4]; frame[20] = animales_copia[0].nombre[5];   // de a un byte
+    frame[21] = animales_copia[0].nombre[6]; frame[22] = animales_copia[0].nombre[7];   // 
+    frame[23] = animales_copia[0].nombre[8]; frame[24] = animales_copia[0].nombre[9];   // tamaño 16 bytes
+    frame[25] = animales_copia[0].nombre[10]; frame[26] = animales_copia[0].nombre[11];   // 
+    frame[27] = animales_copia[0].nombre[12]; frame[28] = animales_copia[0].nombre[13];   // desde dir. 15
+    frame[29] = animales_copia[0].nombre[14]; frame[30] = '\0';  // hasta dir. 30
 
-<<<<<<< HEAD
-    frame[31] = animales_copia.tipoCurva; frame[32] = animales_copia.pesoDosis;  // dir. 31 = tipo de curva // dir. 32 = peso dosis
-=======
-    frame[31] = animal.tipoCurva; frame[32] = animal.pesoDosis;  // dir. 31 = tipo de curva // dir. 32 = peso dosis
->>>>>>> 48b6d0d9efde2d9a0448f79c5bd2fc5a4b975ea6
+    frame[31] = animales_copia[0].tipoCurva; frame[32] = animales_copia[0].pesoDosis;  // dir. 31 = tipo de curva // dir. 32 = peso dosis
     frame[33] = (animales_copia[0].fechaServicio >> 56) & 0xFF; frame[34] = (animales_copia[0].fechaServicio >> 48) & 0xFF;  // Timestamp de fecha Inseminacion
     frame[35] = (animales_copia[0].fechaServicio >> 40) & 0xFF; frame[36] = (animales_copia[0].fechaServicio >> 32) & 0xFF;  // tamaño 8 bytes
     frame[37] = (animales_copia[0].fechaServicio >> 24) & 0xFF; frame[38] = (animales_copia[0].fechaServicio>> 16) & 0xFF;  // desde dir. 33
     frame[39] = (animales_copia[0].fechaServicio >> 8) & 0xFF; frame[40] = animales_copia[0].fechaServicio & 0xFF;  // hasta dir. 40
 
-<<<<<<< HEAD
-    frame[41] = animales_copia.indiceCorporal; frame[42] = animales_copia.agua;  // dir. 41 = indice corporal // dir. 42 = booleano del agua
-    frame[43] = animales_copia.cantDosis; frame[44] = ((animales_copia.intervaloMin >> 8) & 0xFF);  // dir. 43 = cantidad dosis // dir. 44 = intervalomin.(byte alto)
-    frame[45] = (animales_copia.intervaloMin & 0xFF); frame[46] = 0x00;    // dir. 44 = intervalomin.(byte bajo)
-=======
-    frame[41] = animal.indiceCorporal; frame[42] = animal.agua;  // dir. 41 = indice corporal // dir. 42 = booleano del agua
-    frame[43] = animal.cantDosis; frame[44] = ((animal.intervaloMin >> 8) & 0xFF);  // dir. 43 = cantidad dosis // dir. 44 = intervalomin.(byte alto)
-    frame[45] = (animal.intervaloMin & 0xFF); frame[46] = 0x00;    // dir. 44 = intervalomin.(byte bajo)
->>>>>>> 48b6d0d9efde2d9a0448f79c5bd2fc5a4b975ea6
+    frame[41] = animales_copia[0].indiceCorporal; frame[42] = animales_copia[0].agua;  // dir. 41 = indice corporal // dir. 42 = booleano del agua
+    frame[43] = animales_copia[0].cantDosis; frame[44] = ((animales_copia[0].intervaloMin >> 8) & 0xFF);  // dir. 43 = cantidad dosis // dir. 44 = intervalomin.(byte alto)
+    frame[45] = (animales_copia[0].intervaloMin & 0xFF); frame[46] = 0x00;    // dir. 44 = intervalomin.(byte bajo)
 
     crc = modbus_crc16(frame, 47);
     frame[47] = crc & 0xFF; // CRC byte bajo
@@ -185,7 +173,7 @@ void tarea51(data_animal animales_copia, time_t tiempo) {
     receive_modbus_response(response, BUF_SIZE);
 }
 
-void tarea40(configuration configuracion_copia, time_t tiempo) {
+void tarea40() {
     uint8_t frame[BUF_SIZE];
     uint8_t response[BUF_SIZE];
     uint16_t crc;
@@ -199,14 +187,14 @@ void tarea40(configuration configuracion_copia, time_t tiempo) {
     frame[6] = 20; // Cantidad de bytes (2 registros x 2 bytes)
 
          // Timestamp de central
-    frame[7] = (tiempo >> 56) & 0xFF;
-    frame[8] = (tiempo >> 48) & 0xFF;
-    frame[9] = (tiempo >> 40) & 0xFF;
-    frame[10] = (tiempo >> 32) & 0xFF;
-    frame[11] = (tiempo >> 24) & 0xFF;
-    frame[12] = (tiempo >> 16) & 0xFF;
-    frame[13] = (tiempo >> 8) & 0xFF;
-    frame[14] = tiempo & 0xFF;
+    frame[7] = (copia_Tconfiguracion >> 56) & 0xFF;
+    frame[8] = (copia_Tconfiguracion >> 48) & 0xFF;
+    frame[9] = (copia_Tconfiguracion >> 40) & 0xFF;
+    frame[10] = (copia_Tconfiguracion >> 32) & 0xFF;
+    frame[11] = (copia_Tconfiguracion >> 24) & 0xFF;
+    frame[12] = (copia_Tconfiguracion >> 16) & 0xFF;
+    frame[13] = (copia_Tconfiguracion >> 8) & 0xFF;
+    frame[14] = copia_Tconfiguracion & 0xFF;
     frame[15] = configuracion_copia.calibracionMotor;
     frame[16] = configuracion_copia.calibracionAgua;
     frame[17] = configuracion_copia.pesoAnimalDesconocido;
@@ -219,7 +207,7 @@ void tarea40(configuration configuracion_copia, time_t tiempo) {
     receive_modbus_response(response, BUF_SIZE);
 }
 
-void tarea41(configuration configuracion_copia, time_t tiempo) {
+void tarea41() {
     uint8_t frame[BUF_SIZE];
     uint8_t response[BUF_SIZE];
     uint16_t crc;
@@ -283,7 +271,7 @@ void tarea41(configuration configuracion_copia, time_t tiempo) {
     receive_modbus_response(response, BUF_SIZE);
 }
 
-void tarea60(tipo_curva curvas_copia, time_t tiempo) {
+void tarea60() {
     uint8_t frame[BUF_SIZE];
     uint8_t response[BUF_SIZE];
     uint16_t crc;
@@ -297,14 +285,14 @@ void tarea60(tipo_curva curvas_copia, time_t tiempo) {
     frame[6] = 17; // Cantidad de bytes (2 registros x 2 bytes)
 
               // Timestamp de central
-    frame[7] = (tiempo >> 56) & 0xFF;
-    frame[8] = (tiempo >> 48) & 0xFF;
-    frame[9] = (tiempo >> 40) & 0xFF;
-    frame[10] = (tiempo >> 32) & 0xFF;
-    frame[11] = (tiempo >> 24) & 0xFF;
-    frame[12] = (tiempo >> 16) & 0xFF;
-    frame[13] = (tiempo >> 8) & 0xFF;
-    frame[14] = tiempo & 0xFF;
+    frame[7] = (copia_Tcurvas >> 56) & 0xFF;
+    frame[8] = (copia_Tcurvas >> 48) & 0xFF;
+    frame[9] = (copia_Tcurvas >> 40) & 0xFF;
+    frame[10] = (copia_Tcurvas >> 32) & 0xFF;
+    frame[11] = (copia_Tcurvas >> 24) & 0xFF;
+    frame[12] = (copia_Tcurvas >> 16) & 0xFF;
+    frame[13] = (copia_Tcurvas >> 8) & 0xFF;
+    frame[14] = copia_Tcurvas & 0xFF;
 
     crc = modbus_crc16(frame, 15);
     frame[15] = crc & 0xFF; // CRC byte bajo
@@ -314,10 +302,11 @@ void tarea60(tipo_curva curvas_copia, time_t tiempo) {
     receive_modbus_response(response, BUF_SIZE);
 }
 
-void tarea61(tipo_curva curvas_copia, time_t tiempo) {
+void tarea61() {
     uint8_t frame[BUF_SIZE];
     uint8_t response[BUF_SIZE];
     uint16_t crc;
+    uint8_t pos = 7; // Posición inicial para los datos de caravanas libres
 
     frame[0] = SLAVE_ADDR;
     frame[1] = 0x61; // Función: escribir datos de caravanas libres de configuracion
@@ -330,7 +319,7 @@ void tarea61(tipo_curva curvas_copia, time_t tiempo) {
     pos = 7;    
     for(int i=0; i<17; i++) {
         frame[pos++] = curvas_copia[0].segmentos[i].inicio;
-        frame[pos++] = curvas_copia[0].segmentos[i].fin; 
+        frame[pos++] = curvas_copia[0].segmentos[i].pesoInicio; 
     }
 
     crc = modbus_crc16(frame, 41);
@@ -341,7 +330,7 @@ void tarea61(tipo_curva curvas_copia, time_t tiempo) {
     receive_modbus_response(response, BUF_SIZE);
 }
 
-void tarea62(tipo_curva curvas_copia, time_t tiempo) {
+void tarea62() {
     uint8_t frame[BUF_SIZE];
     uint8_t response[BUF_SIZE];
     uint16_t crc;
@@ -354,10 +343,10 @@ void tarea62(tipo_curva curvas_copia, time_t tiempo) {
     frame[5] = 22; // Cantidad de registros
     frame[6] = 43; // Cantidad de bytes (2 registros x 2 bytes)
 
-    pos = 7;    
+    uint8_t pos = 7;    
     for(int i=0; i<17; i++) {
         frame[pos++] = curvas_copia[1].segmentos[i].inicio;
-        frame[pos++] = curvas_copia[1].segmentos[i].fin; 
+        frame[pos++] = curvas_copia[1].segmentos[i].pesoInicio; 
     }
 
     crc = modbus_crc16(frame, 41);
@@ -368,10 +357,11 @@ void tarea62(tipo_curva curvas_copia, time_t tiempo) {
     receive_modbus_response(response, BUF_SIZE);
 }
 
-void tarea63(tipo_curva curvas_copia, time_t tiempo) {
+void tarea63() {
     uint8_t frame[BUF_SIZE];
     uint8_t response[BUF_SIZE];
     uint16_t crc;
+    uint8_t pos = 7; // Posición inicial para los datos de caravanas libres
 
     frame[0] = SLAVE_ADDR;
     frame[1] = 0x63; // Función: escribir datos de caravanas libres de configuracion
@@ -384,7 +374,7 @@ void tarea63(tipo_curva curvas_copia, time_t tiempo) {
     pos = 7;    
     for(int i=0; i<17; i++) {
         frame[pos++] = curvas_copia[2].segmentos[i].inicio;
-        frame[pos++] = curvas_copia[2].segmentos[i].fin; 
+        frame[pos++] = curvas_copia[2].segmentos[i].pesoInicio; 
     }
 
     crc = modbus_crc16(frame, 41);
@@ -395,10 +385,11 @@ void tarea63(tipo_curva curvas_copia, time_t tiempo) {
     receive_modbus_response(response, BUF_SIZE);
 }
 
-void tarea64(tipo_curva curvas_copia, time_t tiempo) {
+void tarea64() {
     uint8_t frame[BUF_SIZE];
     uint8_t response[BUF_SIZE];
     uint16_t crc;
+    uint8_t pos = 7; // Posición inicial para los datos de caravanas libres
 
     frame[0] = SLAVE_ADDR;
     frame[1] = 0x64; // Función: escribir datos de caravanas libres de configuracion
@@ -411,7 +402,7 @@ void tarea64(tipo_curva curvas_copia, time_t tiempo) {
     pos = 7;    
     for(int i=0; i<17; i++) {
         frame[pos++] = curvas_copia[3].segmentos[i].inicio;
-        frame[pos++] = curvas_copia[3].segmentos[i].fin; 
+        frame[pos++] = curvas_copia[3].segmentos[i].pesoInicio; 
     }
 
     crc = modbus_crc16(frame, 41);
@@ -422,10 +413,11 @@ void tarea64(tipo_curva curvas_copia, time_t tiempo) {
     receive_modbus_response(response, BUF_SIZE);
 }
 
-void tarea65(tipo_curva curvas_copia, time_t tiempo) {
+void tarea65() {
     uint8_t frame[BUF_SIZE];
     uint8_t response[BUF_SIZE];
     uint16_t crc;
+        uint8_t pos = 7; // Posición inicial para los datos de caravanas libres
 
     frame[0] = SLAVE_ADDR;
     frame[1] = 0x65; // Función: escribir datos de caravanas libres de configuracion
@@ -438,7 +430,7 @@ void tarea65(tipo_curva curvas_copia, time_t tiempo) {
     pos = 7;    
     for(int i=0; i<17; i++) {
         frame[pos++] = curvas_copia[4].segmentos[i].inicio;
-        frame[pos++] = curvas_copia[4].segmentos[i].fin; 
+        frame[pos++] = curvas_copia[4].segmentos[i].pesoInicio; 
     }
 
     crc = modbus_crc16(frame, 41);
@@ -449,10 +441,11 @@ void tarea65(tipo_curva curvas_copia, time_t tiempo) {
     receive_modbus_response(response, BUF_SIZE);
 }
 
-void tarea70(reloj rtc, time_t tiempo) {
+void tarea70() {
     uint8_t frame[BUF_SIZE];
     uint8_t response[BUF_SIZE];
     uint16_t crc;
+    uint64_t tiempo = time(NULL);
 
     frame[0] = SLAVE_ADDR;
     frame[1] = 0x70; // Función: escribir datos de configuracion
@@ -479,8 +472,7 @@ void tarea70(reloj rtc, time_t tiempo) {
     receive_modbus_response(response, BUF_SIZE);
 }
 
-
-void tarea80(data_animal_leido animales_leidos_copia, time_t tiempo) {
+void tarea80() {
     uint8_t frame[BUF_SIZE];
     uint8_t response[BUF_SIZE];
     uint16_t crc;
@@ -494,14 +486,14 @@ void tarea80(data_animal_leido animales_leidos_copia, time_t tiempo) {
     frame[6] = 17; // Cantidad de bytes (2 registros x 2 bytes)
 
          // Timestamp de central
-    frame[7] = (tiempo >> 56) & 0xFF;
-    frame[8] = (tiempo >> 48) & 0xFF;
-    frame[9] = (tiempo >> 40) & 0xFF;
-    frame[10] = (tiempo >> 32) & 0xFF;
-    frame[11] = (tiempo >> 24) & 0xFF;
-    frame[12] = (tiempo >> 16) & 0xFF;
-    frame[13] = (tiempo >> 8) & 0xFF;
-    frame[14] = tiempo & 0xFF;
+    frame[7] = (copia_Tanimales_leidos >> 56) & 0xFF;
+    frame[8] = (copia_Tanimales_leidos >> 48) & 0xFF;
+    frame[9] = (copia_Tanimales_leidos >> 40) & 0xFF;
+    frame[10] = (copia_Tanimales_leidos >> 32) & 0xFF;
+    frame[11] = (copia_Tanimales_leidos >> 24) & 0xFF;
+    frame[12] = (copia_Tanimales_leidos >> 16) & 0xFF;
+    frame[13] = (copia_Tanimales_leidos >> 8) & 0xFF;
+    frame[14] = copia_Tanimales_leidos & 0xFF;
     crc = modbus_crc16(frame, 15);
     frame[15] = crc & 0xFF; // CRC byte bajo
     frame[16] = crc >> 8;   // CRC byte alto
@@ -510,36 +502,27 @@ void tarea80(data_animal_leido animales_leidos_copia, time_t tiempo) {
     receive_modbus_response(response, BUF_SIZE);   
 }
 
-void tarea81(data_animal_leido animales_leidos_copia, time_t tiempo) {
+void tarea81() {
     uint8_t frame[BUF_SIZE];
     uint8_t response[BUF_SIZE];
     uint16_t crc;
 
+    // --- Ejemplo: Leer 4 registros desde el esclavo ---
     frame[0] = SLAVE_ADDR;
-    frame[1] = 0x81; // Función: mandar timestamp de animales leidos para verificar cola
-    frame[2] = 0x00;
-    frame[3] = 0x02; // Dirección inicial
-    frame[4] = 0x00;
-    frame[5] = 9; // Cantidad de registros
-    frame[6] = 17; // Cantidad de bytes (2 registros x 2 bytes)
-
-         // Timestamp de central
-    frame[7] = (tiempo >> 56) & 0xFF;
-    frame[8] = (tiempo >> 48) & 0xFF;
-    frame[9] = (tiempo >> 40) & 0xFF;
-    frame[10] = (tiempo >> 32) & 0xFF;
-    frame[11] = (tiempo >> 24) & 0xFF;
-    frame[12] = (tiempo >> 16) & 0xFF;
-    frame[13] = (tiempo >> 8) & 0xFF;
-    frame[14] = tiempo & 0xFF;
-    crc = modbus_crc16(frame, 15);
-    frame[15] = crc & 0xFF; // CRC byte bajo
-    frame[16] = crc >> 8;   // CRC byte alto
-    send_modbus_request(frame, 17);
+    frame[1] = 0x03; // Función: Leer registros
+    frame[2] = 0x00; // Dirección alta
+    frame[3] = 0x00; // Dirección baja
+    frame[4] = 0x00; // Cantidad alta
+    frame[5] = 0x04; // Cantidad baja
+    crc = modbus_crc16(frame, 6);
+    frame[6] = crc & 0xFF;
+    frame[7] = crc >> 8;
+    send_modbus_request(frame, 8);
     vTaskDelay(pdMS_TO_TICKS(200));
-    receive_modbus_response(response, BUF_SIZE);   
+    receive_modbus_response(response, BUF_SIZE); 
 }
 
+/*
 void tarea82(data_animal_leido animales_leidos_copia, time_t tiempo) {
     uint8_t frame[BUF_SIZE];
     uint8_t response[BUF_SIZE];
@@ -780,6 +763,7 @@ void tarea89(data_animal_leido animales_leidos_copia, time_t tiempo) {
     receive_modbus_response(response, BUF_SIZE);   
 }
 
+*/
 /*void tarea90(data_animal_leido animales_leidos_copia, time_t tiempo) {
     uint8_t frame[BUF_SIZE];
     uint8_t response[BUF_SIZE];

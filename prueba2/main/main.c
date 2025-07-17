@@ -58,15 +58,14 @@ void task_modbus_comm(void *param)
                     printf("MODBUS: No se pudo tomar el mutex_Tanimales\n");
                 }
                 tarea40();
+                vTaskDelay(pdMS_TO_TICKS(250));
                 if(response[5]==0xff && response[6]==0xff) {
                     for(uint8_t i = 0; i < 9; i++) {
                         response[i]=0;
                     }
+                    vTaskDelay(pdMS_TO_TICKS(500));
                     tarea41();
-                    tarea42();
-                    tarea43();
-                    tarea44();
-                    tarea45();
+
                 }else{
                     printf("MODBUS: completado al enviar datos de animales\n");
                 }
@@ -74,6 +73,7 @@ void task_modbus_comm(void *param)
                 tarea_modbus = 2; // Cambiar a siguiente tarea
                 break;
             }
+            
             case 2: {// case para mandar curvas
                 if (xSemaphoreTake(mutex_curvas, pdMS_TO_TICKS(100))) {
                     for (uint8_t i = 0; i < 5; i++) {
@@ -91,54 +91,66 @@ void task_modbus_comm(void *param)
                     printf("MODBUS: No se pudo tomar el mutex_Tanimales\n");
                 }
                 tarea60();
+                vTaskDelay(pdMS_TO_TICKS(250));
                 if(response[5]==0xff && response[6]==0xff) {
                     for(uint8_t i = 0; i < 9; i++) {
                         response[i]=0;
                     }
                     tarea61();
+                    vTaskDelay(pdMS_TO_TICKS(500));
                     tarea62();
+                    vTaskDelay(pdMS_TO_TICKS(500));
                     tarea63();
+                    vTaskDelay(pdMS_TO_TICKS(500));
                     tarea64();
+                    vTaskDelay(pdMS_TO_TICKS(500));
                     tarea65();
                 }else{
                     printf("MODBUS: completado al enviar datos de animales\n");
                 }
                 printf("MODBUS: Enviar Configuracion\n");
-                tarea_modbus = 2; // Cambiar a siguiente tarea
+                tarea_modbus = 3; // Cambiar a siguiente tarea
                 break;
             
             }
-            case 3: {
-                printf("MODBUS: Enviar datos RTC\n");
-                tarea_modbus = 4; // Cambiar a siguiente tarea
+            
+            case 3: { // recuperar datos de animales leido
+                if (xSemaphoreTake(mutex_Tanimales_leidos, pdMS_TO_TICKS(100))) {
+                    copia_Tanimales_leidos = timestamp_animales_leidos;
+                    xSemaphoreGive(mutex_Tanimales_leidos);
+                } else {
+                    printf("MODBUS: No se pudo tomar el mutex_Tanimales\n");
+                }                
+                tarea80();
+                vTaskDelay(pdMS_TO_TICKS(250));
+                if(response[5]==0xff && response[6]==0xff) {
+                    for(uint8_t i = 0; i < 9; i++) {
+                        response[i]=0;
+                    }
+                    tarea81();
+                tarea_modbus = 0; // Cambiar a primera tarea
                 break;
+                }
             }
-            case 4: {
-                printf("MODBUS: Enviar datos de por si las moscas\n");
-                tarea_modbus = 5; // Cambiar a primera tarea
+
+
+            case 4: { // envion RTC
+                tarea70();
+                tarea_modbus = 0; // Cambiar a primera tarea
                 break;
             }
             // Agregá más casos según necesites...
-            default:
+            default:{
             printf("PUTO EL QUE LEE\n");
                 tarea_modbus = 0; // Reiniciar a la primera tarea
                 break;
-        }
-
-        // Ejemplo: mostrar config_actual
-        if (xSemaphoreTake(mutex_config, pdMS_TO_TICKS(100))) {
-            printf("MODBUS: Enviando config a Tolva %d (motor: %s)\n",
-                   config_actual.id_tolva,
-                   config_actual.motor_on ? "ON" : "OFF");
-
-            printf("MODBUS: Último JSON: %s\n", config_actual.ultimo_json);
-            xSemaphoreGive(mutex_config);
+            }
         }
 
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
-}
+
 void app_main(void)
 {
     inicializar_animales_actual_nombre() ;

@@ -5,4 +5,15 @@
 
 
 void modbus_master_init(uart_port_t uart_num);
-void tarea51(data_animal a, time_t t);
+void tarea51();
+void tarea40();
+void tarea41();
+void tarea60();
+void tarea61();
+void tarea62();
+void tarea63();
+void tarea64();
+void tarea65();
+void tarea70();
+void tarea80();
+void tarea81();
