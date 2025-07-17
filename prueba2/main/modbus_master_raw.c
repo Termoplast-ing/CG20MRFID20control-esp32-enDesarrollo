@@ -506,7 +506,7 @@ void tarea81() {
     uint8_t frame[BUF_SIZE];
     uint8_t response[BUF_SIZE];
     uint16_t crc;
-    data_animal_leido animales_leidos_aux [3];
+    data_animal_leido animales_leidos_aux;
     int total_animales_leidos = 0;
     // --- Ejemplo: Leer 4 registros desde el esclavo ---
     frame[0] = SLAVE_ADDR;
@@ -532,27 +532,27 @@ void tarea81() {
     }
     if (caravana_vacia == false) {
         for (int j = 0; j < 15; j++) {
-            animales_leidos_aux[i].nombre[j] = response[6 + (i * 25) + j];
+            animales_leidos_aux.nombre[j] = response[6 + (i * 25) + j];
 
         }
-        animales_leidos_aux[i].fechaDispensado = animales_leidos_aux[i].fechaDispensado | ((response[6+(i*25)+16]) << 56);
-        animales_leidos_aux[i].fechaDispensado = animales_leidos_aux[i].fechaDispensado | ((response[6+(i*25)+17]) << 48);
-        animales_leidos_aux[i].fechaDispensado = animales_leidos_aux[i].fechaDispensado | ((response[6+(i*25)+18]) << 40);
-        animales_leidos_aux[i].fechaDispensado = animales_leidos_aux[i].fechaDispensado | ((response[6+(i*25)+19]) << 32);
-        animales_leidos_aux[i].fechaDispensado = animales_leidos_aux[i].fechaDispensado | ((response[6+(i*25)+20]) << 24);
-        animales_leidos_aux[i].fechaDispensado = animales_leidos_aux[i].fechaDispensado | ((response[6+(i*25)+21]) << 16);
-        animales_leidos_aux[i].fechaDispensado = animales_leidos_aux[i].fechaDispensado | ((response[6+(i*25)+22]) << 8);
-        animales_leidos_aux[i].fechaDispensado = animales_leidos_aux[i].fechaDispensado | ((response[6+(i*25)+23]));
-        animales_leidos_aux[i].pesoDispensado = response[6+(i*25)+24];
+        animales_leidos_aux.fechaDispensado = animales_leidos_aux.fechaDispensado | ((response[6+(i*25)+16]) << 56);
+        animales_leidos_aux.fechaDispensado = animales_leidos_aux.fechaDispensado | ((response[6+(i*25)+17]) << 48);
+        animales_leidos_aux.fechaDispensado = animales_leidos_aux.fechaDispensado | ((response[6+(i*25)+18]) << 40);
+        animales_leidos_aux.fechaDispensado = animales_leidos_aux.fechaDispensado | ((response[6+(i*25)+19]) << 32);
+        animales_leidos_aux.fechaDispensado = animales_leidos_aux.fechaDispensado | ((response[6+(i*25)+20]) << 24);
+        animales_leidos_aux.fechaDispensado = animales_leidos_aux.fechaDispensado | ((response[6+(i*25)+21]) << 16);
+        animales_leidos_aux.fechaDispensado = animales_leidos_aux.fechaDispensado | ((response[6+(i*25)+22]) << 8);
+        animales_leidos_aux.fechaDispensado = animales_leidos_aux.fechaDispensado | ((response[6+(i*25)+23]));
+        animales_leidos_aux.pesoDispensado = response[6+(i*25)+24];
 
         if(total_animales_leidos < 100){
-            animales_leidos_copia[total_animales_leidos] = animales_leidos_aux[i];
+            animales_leidos_copia[total_animales_leidos] = animales_leidos_aux;
             total_animales_leidos++;
              }
         }
     }
     for(int i = 0; i < 3; i++){
-    memset(&animales_leidos_aux[i], 0, sizeof(data_animal_leido));
+    memset(&animales_leidos_aux, 0, sizeof(data_animal_leido));
     }
 }
 /*
@@ -598,7 +598,6 @@ void tarea83(data_animal_leido animales_leidos_copia, time_t tiempo) {
     frame[4] = 0x00;
     frame[5] = 9; // Cantidad de registros
     frame[6] = 17; // Cantidad de bytes (2 registros x 2 bytes)
-
          // Timestamp de central
     frame[7] = (tiempo >> 56) & 0xFF;
     frame[8] = (tiempo >> 48) & 0xFF;
