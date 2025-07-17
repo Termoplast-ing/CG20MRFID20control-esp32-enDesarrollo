@@ -141,7 +141,7 @@ void task_modbus_comm(void *param)
             }
             // Agregá más casos según necesites...
             default:{
-            printf("PUTO EL QUE LEE\n");
+            printf("ROSCA FLOJA\n");
                 tarea_modbus = 0; // Reiniciar a la primera tarea
                 break;
             }
