@@ -119,7 +119,7 @@ uint16_t modbus_crc16(const uint8_t *buf, int len) {
 }
 
     
-void tarea51() {
+void tarea51(uint16_t index) {
     uint8_t frame[BUF_SIZE];
     uint8_t response[BUF_SIZE];
     uint16_t crc;
@@ -146,24 +146,24 @@ void tarea51() {
     frame[13] = (copia_Tanimales >> 8) & 0xFF;
     frame[14] = copia_Tanimales & 0xFF;
 
-    frame[15] = animales_copia[0].nombre[0]; frame[16] = animales_copia[0].nombre[1];   // string de numero caravana
-    frame[17] = animales_copia[0].nombre[2]; frame[18] = animales_copia[0].nombre[3];   // pasado por caracter 
-    frame[19] = animales_copia[0].nombre[4]; frame[20] = animales_copia[0].nombre[5];   // de a un byte
-    frame[21] = animales_copia[0].nombre[6]; frame[22] = animales_copia[0].nombre[7];   // 
-    frame[23] = animales_copia[0].nombre[8]; frame[24] = animales_copia[0].nombre[9];   // tamaño 16 bytes
-    frame[25] = animales_copia[0].nombre[10]; frame[26] = animales_copia[0].nombre[11];   // 
-    frame[27] = animales_copia[0].nombre[12]; frame[28] = animales_copia[0].nombre[13];   // desde dir. 15
-    frame[29] = animales_copia[0].nombre[14]; frame[30] = '\0';  // hasta dir. 30
+    frame[15] = animales_copia[index].nombre[0]; frame[16] = animales_copia[index].nombre[1];   // string de numero caravana
+    frame[17] = animales_copia[index].nombre[2]; frame[18] = animales_copia[index].nombre[3];   // pasado por caracter 
+    frame[19] = animales_copia[index].nombre[4]; frame[20] = animales_copia[index].nombre[5];   // de a un byte
+    frame[21] = animales_copia[index].nombre[6]; frame[22] = animales_copia[index].nombre[7];   // 
+    frame[23] = animales_copia[index].nombre[8]; frame[24] = animales_copia[index].nombre[9];   // tamaño 16 bytes
+    frame[25] = animales_copia[index].nombre[10]; frame[26] = animales_copia[index].nombre[11];   // 
+    frame[27] = animales_copia[index].nombre[12]; frame[28] = animales_copia[index].nombre[13];   // desde dir. 15
+    frame[29] = animales_copia[index].nombre[14]; frame[30] = '\0';  // hasta dir. 30
 
-    frame[31] = animales_copia[0].tipoCurva; frame[32] = animales_copia[0].pesoDosis;  // dir. 31 = tipo de curva // dir. 32 = peso dosis
-    frame[33] = (animales_copia[0].fechaServicio >> 56) & 0xFF; frame[34] = (animales_copia[0].fechaServicio >> 48) & 0xFF;  // Timestamp de fecha Inseminacion
-    frame[35] = (animales_copia[0].fechaServicio >> 40) & 0xFF; frame[36] = (animales_copia[0].fechaServicio >> 32) & 0xFF;  // tamaño 8 bytes
-    frame[37] = (animales_copia[0].fechaServicio >> 24) & 0xFF; frame[38] = (animales_copia[0].fechaServicio>> 16) & 0xFF;  // desde dir. 33
-    frame[39] = (animales_copia[0].fechaServicio >> 8) & 0xFF; frame[40] = animales_copia[0].fechaServicio & 0xFF;  // hasta dir. 40
+    frame[31] = animales_copia[index].tipoCurva; frame[32] = animales_copia[index].pesoDosis;  // dir. 31 = tipo de curva // dir. 32 = peso dosis
+    frame[33] = (animales_copia[index].fechaServicio >> 56) & 0xFF; frame[34] = (animales_copia[index].fechaServicio >> 48) & 0xFF;  // Timestamp de fecha Inseminacion
+    frame[35] = (animales_copia[index].fechaServicio >> 40) & 0xFF; frame[36] = (animales_copia[index].fechaServicio >> 32) & 0xFF;  // tamaño 8 bytes
+    frame[37] = (animales_copia[index].fechaServicio >> 24) & 0xFF; frame[38] = (animales_copia[index].fechaServicio>> 16) & 0xFF;  // desde dir. 33
+    frame[39] = (animales_copia[index].fechaServicio >> 8) & 0xFF; frame[40] = animales_copia[index].fechaServicio & 0xFF;  // hasta dir. 40
 
-    frame[41] = animales_copia[0].indiceCorporal; frame[42] = animales_copia[0].agua;  // dir. 41 = indice corporal // dir. 42 = booleano del agua
-    frame[43] = animales_copia[0].cantDosis; frame[44] = ((animales_copia[0].intervaloMin >> 8) & 0xFF);  // dir. 43 = cantidad dosis // dir. 44 = intervalomin.(byte alto)
-    frame[45] = (animales_copia[0].intervaloMin & 0xFF); frame[46] = 0x00;    // dir. 44 = intervalomin.(byte bajo)
+    frame[41] = animales_copia[index].indiceCorporal; frame[42] = animales_copia[index].agua;  // dir. 41 = indice corporal // dir. 42 = booleano del agua
+    frame[43] = animales_copia[index].cantDosis; frame[44] = ((animales_copia[index].intervaloMin >> 8) & 0xFF);  // dir. 43 = cantidad dosis // dir. 44 = intervalomin.(byte alto)
+    frame[45] = (animales_copia[index].intervaloMin & 0xFF); frame[46] = 0x00;    // dir. 44 = intervalomin.(byte bajo)
 
     crc = modbus_crc16(frame, 47);
     frame[47] = crc & 0xFF; // CRC byte bajo

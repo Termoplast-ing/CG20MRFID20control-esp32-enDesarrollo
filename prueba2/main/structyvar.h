@@ -69,6 +69,7 @@ typedef struct {
     uint8_t pesoAnimalDesconocido;
 } configuration;
 
+extern uint16_t indice;
 extern data_animal animales_actual[20];
 extern SemaphoreHandle_t mutex_animales;
 extern data_animal animales_copia[20];

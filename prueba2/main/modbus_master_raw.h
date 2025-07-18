@@ -5,7 +5,7 @@
 
 
 void modbus_master_init(uart_port_t uart_num);
-void tarea51();
+void tarea51(uint16_t index);
 void tarea40();
 void tarea41();
 void tarea60();

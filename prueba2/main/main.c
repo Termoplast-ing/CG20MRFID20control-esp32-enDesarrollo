@@ -37,7 +37,8 @@ void task_modbus_comm(void *param)
                     printf("MODBUS: No se pudo tomar el mutex_Tanimales\n");
                 }
                 for(uint8_t i = 0; i < 20; i++) {
-                    tarea51(); // Enviar datos de animales
+                    tarea51(indice); // Enviar datos de animales
+                    vTaskDelay(pdMS_TO_TICKS(250));
                 }
                 tarea_modbus = 1; // Cambiar a siguiente tarea
                 break;
