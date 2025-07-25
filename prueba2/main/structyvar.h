@@ -12,6 +12,8 @@
 #include "freertos/semphr.h"
 
 void inicializar_animales_actual_nombre(void);
+void inicializar_config(void);
+void inicializar_curvas(void);
 
 typedef struct {
     int id_tolva;
@@ -42,9 +44,10 @@ typedef struct {
 
 /////Estructura para almacenar los datos de los animales leidos por la antena RFID/////
 typedef struct{
-    char nombre[15];
+    char nombre[16];
     time_t fechaDispensado;
-    uint8_t pesoDispensado;  
+    uint8_t pesoDispensado;
+    uint8_t nroTolva;  
 } data_animal_leido;
 
 /////Estructura para almacenar los segmentos de las curvas de crecimiento/////
@@ -69,7 +72,7 @@ typedef struct {
     uint8_t pesoAnimalDesconocido;
 } configuration;
 
-extern uint16_t indice;
+extern uint8_t indice;
 extern data_animal animales_actual[20];
 extern SemaphoreHandle_t mutex_animales;
 extern data_animal animales_copia[20];
@@ -97,9 +100,11 @@ extern SemaphoreHandle_t mutex_Tconfiguracion;
 extern time_t copia_Tconfiguracion;
 extern time_t timestamp_relojRTC;
 
-extern uint8_t response[9];
+//extern uint8_t response[9];
 
 extern ConfigTolva config_actual;
 extern SemaphoreHandle_t mutex_config;
+extern bool timeOK;
+extern data_animal_leido animal_leido_AUX;
 
 #endif // STRUCTYVAR_H

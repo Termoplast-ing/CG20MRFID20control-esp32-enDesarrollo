@@ -16,6 +16,7 @@ void task_modbus_comm(void *param)
 {
     while (1)
     {
+        printf("tarea MODBUS: %d\n", tarea_modbus);
         switch (tarea_modbus)
         {
             case 0: { // case para mandar datos de animales
@@ -36,10 +37,14 @@ void task_modbus_comm(void *param)
                 } else {
                     printf("MODBUS: No se pudo tomar el mutex_Tanimales\n");
                 }
+                
                 for(uint8_t i = 0; i < 20; i++) {
-                    tarea51(indice); // Enviar datos de animales
+                    indice=i;
+                    tarea51(indice);
                     vTaskDelay(pdMS_TO_TICKS(250));
                 }
+                
+                
                 tarea_modbus = 1; // Cambiar a siguiente tarea
                 break;
             }
@@ -59,14 +64,15 @@ void task_modbus_comm(void *param)
                     printf("MODBUS: No se pudo tomar el mutex_Tanimales\n");
                 }
                 tarea40();
+               // printf("5: %02X 6: %02X\n",response[5], response[6]);
                 vTaskDelay(pdMS_TO_TICKS(250));
-                if(response[5]==0xff && response[6]==0xff) {
-                    for(uint8_t i = 0; i < 9; i++) {
-                        response[i]=0;
-                    }
-                    vTaskDelay(pdMS_TO_TICKS(500));
+               // printf("5: %02X 6: %02X\n",response[5], response[6]);
+                if(timeOK) {
+                    printf("MODBUS: estoy aca\n");
+                    timeOK= false; // Reiniciar la variable timeOK
+                    vTaskDelay(pdMS_TO_TICKS(250));
                     tarea41();
-
+                    
                 }else{
                     printf("MODBUS: completado al enviar datos de animales\n");
                 }
@@ -93,44 +99,65 @@ void task_modbus_comm(void *param)
                 }
                 tarea60();
                 vTaskDelay(pdMS_TO_TICKS(250));
-                if(response[5]==0xff && response[6]==0xff) {
-                    for(uint8_t i = 0; i < 9; i++) {
-                        response[i]=0;
-                    }
+                if(timeOK) {
+                    timeOK= false; // Reiniciar la variable timeOK
+                    printf("enviando curvas\n");
                     tarea61();
-                    vTaskDelay(pdMS_TO_TICKS(500));
+                    vTaskDelay(pdMS_TO_TICKS(250));
+                    printf("fin tarea 61\n");
                     tarea62();
-                    vTaskDelay(pdMS_TO_TICKS(500));
+                    vTaskDelay(pdMS_TO_TICKS(250));
+                    printf("fin tarea 62\n");
                     tarea63();
-                    vTaskDelay(pdMS_TO_TICKS(500));
+                    vTaskDelay(pdMS_TO_TICKS(250));
+                    printf("fin tarea 63\n");
                     tarea64();
-                    vTaskDelay(pdMS_TO_TICKS(500));
+                    vTaskDelay(pdMS_TO_TICKS(250));
+                    printf("fin tarea 64\n");
                     tarea65();
                 }else{
-                    printf("MODBUS: completado al enviar datos de animales\n");
+                    printf("MODBUS: datos curvas estan actulizados\n");
                 }
-                printf("MODBUS: Enviar Configuracion\n");
+                printf("MODBUS: Enviar datos curva\n");
+                
+for(uint8_t i=0;i<5;i++){
+            printf("imprimiendo curva %d\n", i);
+            for(uint8_t j=0;j<17;j++){
+                printf("Segmento %d: Inicio: %d, Peso Inicio: %d\n", j, curvas_copia[i].segmentos[j].inicio, curvas_copia[i].segmentos[j].pesoInicio);
+            }
+        }
                 tarea_modbus = 3; // Cambiar a siguiente tarea
                 break;
             
             }
             
             case 3: { // recuperar datos de animales leido
-                if (xSemaphoreTake(mutex_Tanimales_leidos, pdMS_TO_TICKS(100))) {
-                    copia_Tanimales_leidos = timestamp_animales_leidos;
-                    xSemaphoreGive(mutex_Tanimales_leidos);
+                if (xSemaphoreTake(mutex_animales_leidos, pdMS_TO_TICKS(100))) {
+                    for(uint8_t i=0; i<100 ; i++){
+                        animales_leidos_copia[i] = animales_leidos_actual[i];
+                    xSemaphoreGive(mutex_animales_leidos);
+                    }
                 } else {
                     printf("MODBUS: No se pudo tomar el mutex_Tanimales\n");
                 }                
-                tarea80();
+                tarea20();
                 vTaskDelay(pdMS_TO_TICKS(250));
-                if(response[5]==0xff && response[6]==0xff) {
+               /* if(response[5]==0xff && response[6]==0xff) {
                     for(uint8_t i = 0; i < 9; i++) {
                         response[i]=0;
                     }
                     tarea81();
-                tarea_modbus = 0; // Cambiar a primera tarea
-                }
+                
+                }*/
+               for (uint8_t i = 0; i < 100; i++) {
+    if (strcmp(animales_leidos_copia[i].nombre, "000000000000000") != 0) {
+        printf("Animal %d: %s\n", i, animales_leidos_copia[i].nombre);
+        printf("Fecha dispensado: %lld\n", animales_leidos_copia[i].fechaDispensado);
+        printf("Peso dispensado: %d\n", animales_leidos_copia[i].pesoDispensado);
+        printf("Nro Tolva: %d\n", animales_leidos_copia[i].nroTolva);
+    
+}}
+                tarea_modbus = 4; // Cambiar a primera tarea
             break;
             }
 
@@ -143,6 +170,7 @@ void task_modbus_comm(void *param)
             // Agregá más casos según necesites...
             default:{
             printf("ROSCA FLOJA\n");
+            
                 tarea_modbus = 0; // Reiniciar a la primera tarea
                 break;
             }
@@ -155,6 +183,14 @@ void task_modbus_comm(void *param)
 void app_main(void)
 {
     inicializar_animales_actual_nombre() ;
+    inicializar_config();
+    inicializar_curvas();
+    for(uint8_t i=0; i<100; i++){
+    snprintf(animales_leidos_actual[i].nombre, sizeof(animales_leidos_actual[i].nombre), "000000000000000");
+    }
+
+    printf("curvas_actual[2].segmentos[5].inicio: %d\n", curvas_actual[2].segmentos[5].inicio);
+    
     printf("INICIO: Iniciando sistema controlador...\n");
 printf("fechaServicio: %lld\n", animales_actual[0].fechaServicio);
     // Inicialización de mutex

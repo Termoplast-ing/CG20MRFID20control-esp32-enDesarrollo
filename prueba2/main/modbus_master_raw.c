@@ -24,6 +24,7 @@
 #define TXD_PIN 17
 #define RXD_PIN 16
 #define SLAVE_ADDR 0x02
+#define MAX_ANIMALES 100
 
 //static const char *TAG = "MODBUS_MASTER";
 
@@ -119,7 +120,7 @@ uint16_t modbus_crc16(const uint8_t *buf, int len) {
 }
 
     
-void tarea51(uint16_t index) {
+void tarea51(uint8_t index) {
     uint8_t frame[BUF_SIZE];
     uint8_t response[BUF_SIZE];
     uint16_t crc;
@@ -129,22 +130,25 @@ void tarea51(uint16_t index) {
     frame[1] = 0x51; // Función: escribir datos de dieta de caravanas
     frame[2] = 0x00;
     frame[3] = 0x02; // Dirección inicial
-    frame[4] = 0x00;
+    frame[4] = index;
     frame[5] = 25; // Cantidad de registros
     frame[6] = 49; // Cantidad de bytes (2 registros x 2 bytes)
     
     // String de número caravana
     //snprintf((char *)&frame[17], sizeof(frame) - 17, "%s", animal.nombre);
-
+printf("enviado animal: %d\n", index);
         // Timestamp de central
-    frame[7] = (copia_Tanimales >> 56) & 0xFF;
-    frame[8] = (copia_Tanimales >> 48) & 0xFF;
-    frame[9] = (copia_Tanimales >> 40) & 0xFF;
-    frame[10] = (copia_Tanimales >> 32) & 0xFF;
-    frame[11] = (copia_Tanimales >> 24) & 0xFF;
-    frame[12] = (copia_Tanimales >> 16) & 0xFF;
-    frame[13] = (copia_Tanimales >> 8) & 0xFF;
-    frame[14] = copia_Tanimales & 0xFF;
+        
+            frame[7] = (copia_Tanimales >> 56) & 0xFF;
+            frame[8] = (copia_Tanimales >> 48) & 0xFF;
+            frame[9] = (copia_Tanimales >> 40) & 0xFF;
+            frame[10] = (copia_Tanimales >> 32) & 0xFF;
+            frame[11] = (copia_Tanimales >> 24) & 0xFF;
+            frame[12] = (copia_Tanimales >> 16) & 0xFF;
+            frame[13] = (copia_Tanimales >> 8) & 0xFF;
+            frame[14] = copia_Tanimales & 0xFF;
+     
+    
 
     frame[15] = animales_copia[index].nombre[0]; frame[16] = animales_copia[index].nombre[1];   // string de numero caravana
     frame[17] = animales_copia[index].nombre[2]; frame[18] = animales_copia[index].nombre[3];   // pasado por caracter 
@@ -164,7 +168,16 @@ void tarea51(uint16_t index) {
     frame[41] = animales_copia[index].indiceCorporal; frame[42] = animales_copia[index].agua;  // dir. 41 = indice corporal // dir. 42 = booleano del agua
     frame[43] = animales_copia[index].cantDosis; frame[44] = ((animales_copia[index].intervaloMin >> 8) & 0xFF);  // dir. 43 = cantidad dosis // dir. 44 = intervalomin.(byte alto)
     frame[45] = (animales_copia[index].intervaloMin & 0xFF); frame[46] = 0x00;    // dir. 44 = intervalomin.(byte bajo)
-
+    
+   /* printf("numero caravana: %s\n", animales_copia[index].nombre);
+    printf("tipoCurva: %d\n", animales_copia[index].tipoCurva);
+    printf("pesoDosis: %d\n", animales_copia[index].pesoDosis);
+    printf("fechaServicio: %lld\n", animales_copia[index].fechaServicio);
+    printf("indiceCorporal: %d\n", animales_copia[index].indiceCorporal);
+    printf("agua: %d\n", animales_copia[index].agua);
+    printf("cantDosis: %d\n", animales_copia[index].cantDosis);
+    printf("intervaloMin: %d\n", animales_copia[index].intervaloMin);
+    */
     crc = modbus_crc16(frame, 47);
     frame[47] = crc & 0xFF; // CRC byte bajo
     frame[48] = crc >> 8;   // CRC byte alto
@@ -205,6 +218,11 @@ void tarea40() {
     send_modbus_request(frame, 20);
     vTaskDelay(pdMS_TO_TICKS(200));
     receive_modbus_response(response, BUF_SIZE);
+    if(response[5] == 0xff && response[6] == 0xff) {
+        timeOK= true; // Indicar que el tiempo está sincronizado
+    } else {
+        timeOK = false; // Indicar que el tiempo no está sincronizado
+    }
 }
 
 void tarea41() {
@@ -269,6 +287,7 @@ void tarea41() {
     send_modbus_request(frame, 89);
     vTaskDelay(pdMS_TO_TICKS(200));
     receive_modbus_response(response, BUF_SIZE);
+    
 }
 
 void tarea60() {
@@ -300,6 +319,11 @@ void tarea60() {
     send_modbus_request(frame, 17);
     vTaskDelay(pdMS_TO_TICKS(200));
     receive_modbus_response(response, BUF_SIZE);
+    if(response[5] == 0xff && response[6] == 0xff) {
+        timeOK= true; // Indicar que el tiempo está sincronizado
+    } else {
+        timeOK = false; // Indicar que el tiempo no está sincronizado
+    }
 }
 
 void tarea61() {
@@ -472,20 +496,21 @@ void tarea70() {
     receive_modbus_response(response, BUF_SIZE);
 }
 
-void tarea80() {
+void tarea20() {
     uint8_t frame[BUF_SIZE];
     uint8_t response[BUF_SIZE];
     uint16_t crc;
 
     frame[0] = SLAVE_ADDR;
-    frame[1] = 0x80; // Función: mandar timestamp de animales leidos para verificar cola
+    frame[1] = 0x20; // Función: mandar timestamp de animales leidos para verificar cola
     frame[2] = 0x00;
     frame[3] = 0x02; // Dirección inicial
     frame[4] = 0x00;
-    frame[5] = 9; // Cantidad de registros
-    frame[6] = 17; // Cantidad de bytes (2 registros x 2 bytes)
+    frame[5] = 4; // Cantidad de registros
+    frame[6] = 8; // Cantidad de bytes (2 registros x 2 bytes)
+    frame[7] = 0x00;
 
-         // Timestamp de central
+    /*// Timestamp de central
     frame[7] = (copia_Tanimales_leidos >> 56) & 0xFF;
     frame[8] = (copia_Tanimales_leidos >> 48) & 0xFF;
     frame[9] = (copia_Tanimales_leidos >> 40) & 0xFF;
@@ -493,16 +518,39 @@ void tarea80() {
     frame[11] = (copia_Tanimales_leidos >> 24) & 0xFF;
     frame[12] = (copia_Tanimales_leidos >> 16) & 0xFF;
     frame[13] = (copia_Tanimales_leidos >> 8) & 0xFF;
-    frame[14] = copia_Tanimales_leidos & 0xFF;
-    crc = modbus_crc16(frame, 15);
-    frame[15] = crc & 0xFF; // CRC byte bajo
-    frame[16] = crc >> 8;   // CRC byte alto
-    send_modbus_request(frame, 17);
-    vTaskDelay(pdMS_TO_TICKS(200));
-    receive_modbus_response(response, BUF_SIZE);   
+    frame[14] = copia_Tanimales_leidos & 0xFF;*/
+    
+    crc = modbus_crc16(frame, 8);
+    frame[8] = crc & 0xFF; // CRC byte bajo
+    frame[9] = crc >> 8;   // CRC byte alto
+    send_modbus_request(frame, 10);
+    vTaskDelay(pdMS_TO_TICKS(250));
+    receive_modbus_response(response, BUF_SIZE);  
+
+
+    for (uint8_t i = 0; i < MAX_ANIMALES; i++) {
+        if (strcmp(animales_leidos_copia[i].nombre, "000000000000000") == 0) {
+            // Encontrado espacio libre, copiar auxiliar
+            for(uint8_t j = 0; j < 16; j++) {
+                printf("nombre: %c", response[j+7]);
+                printf("\n");
+                animales_leidos_copia[i].nombre[j] = response[j+7];
+            }
+            for(int k = 0; k < 8; k++) {
+                animales_leidos_copia[i].fechaDispensado = animales_leidos_copia[i].fechaDispensado | ((uint64_t)response[23+k] << (8 * (7 - k)));
+            }
+            animales_leidos_copia[i].pesoDispensado = response[31];
+            animales_leidos_copia[i].nroTolva= response[0];
+
+            printf("Animal agregado en la posición %d: %s\n", i, animales_leidos_copia[i].nombre);
+            break;
+        }
+    }
+
 }
 
-void tarea81() {
+
+/*void tarea81() {
     uint8_t frame[BUF_SIZE];
     uint8_t response[BUF_SIZE];
     uint16_t crc;
@@ -554,7 +602,7 @@ void tarea81() {
     for(int i = 0; i < 3; i++){
     memset(&animales_leidos_aux, 0, sizeof(data_animal_leido));
     }
-}
+}*/
 /*
 void tarea82(data_animal_leido animales_leidos_copia, time_t tiempo) {
     uint8_t frame[BUF_SIZE];
