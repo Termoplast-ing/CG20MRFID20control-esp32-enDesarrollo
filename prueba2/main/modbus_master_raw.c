@@ -12,6 +12,7 @@
 #include "esp_err.h"
 #include "freertos/queue.h"
 #include "structyvar.h"
+#include "reloj.h"
 
 
 // Define CONFIG_FREERTOS_HZ if not defined (default 100 Hz)
@@ -118,12 +119,22 @@ uint16_t modbus_crc16(const uint8_t *buf, int len) {
     }
     return crc;
 }
-
-    
+//void imprimir_animales_copia(void);
 void tarea51(uint8_t index) {
     uint8_t frame[BUF_SIZE];
     uint8_t response[BUF_SIZE];
     uint16_t crc;
+
+      // Print para verificar datos que vamos a enviar
+   /* printf("DEBUG - Enviando datos animal índice %d:\n", index);
+    printf("  nombre: %s\n", animales_copia[index].nombre);
+    printf("  tipoCurva: %d\n", animales_copia[index].tipoCurva);
+    printf("  pesoDosis: %d\n", animales_copia[index].pesoDosis);
+    printf("  fechaServicio: %lld\n", animales_copia[index].fechaServicio);
+    printf("  indiceCorporal: %d\n", animales_copia[index].indiceCorporal);
+    printf("  agua: %d\n", animales_copia[index].agua);
+    printf("  cantDosis: %d\n", animales_copia[index].cantDosis);
+    printf("  intervaloMin: %d\n", animales_copia[index].intervaloMin);*/
 
     // --- Ejemplo: Escribir un registro (0x06) ---
     frame[0] = SLAVE_ADDR;
@@ -136,7 +147,7 @@ void tarea51(uint8_t index) {
     
     // String de número caravana
     //snprintf((char *)&frame[17], sizeof(frame) - 17, "%s", animal.nombre);
-printf("enviado animal: %d\n", index);
+   // printf("enviado animal: %d\n", index);
         // Timestamp de central
         
             frame[7] = (copia_Tanimales >> 56) & 0xFF;
@@ -148,8 +159,6 @@ printf("enviado animal: %d\n", index);
             frame[13] = (copia_Tanimales >> 8) & 0xFF;
             frame[14] = copia_Tanimales & 0xFF;
      
-    
-
     frame[15] = animales_copia[index].nombre[0]; frame[16] = animales_copia[index].nombre[1];   // string de numero caravana
     frame[17] = animales_copia[index].nombre[2]; frame[18] = animales_copia[index].nombre[3];   // pasado por caracter 
     frame[19] = animales_copia[index].nombre[4]; frame[20] = animales_copia[index].nombre[5];   // de a un byte
@@ -181,9 +190,18 @@ printf("enviado animal: %d\n", index);
     crc = modbus_crc16(frame, 47);
     frame[47] = crc & 0xFF; // CRC byte bajo
     frame[48] = crc >> 8;   // CRC byte alto
+    /*for (int i = 0; i < 49; i++) {
+        printf("%02X ", frame[i]);
+    }*/
+   // printf("\n");
     send_modbus_request(frame, 49);
     vTaskDelay(pdMS_TO_TICKS(200));
     receive_modbus_response(response, BUF_SIZE);
+    //printf("DEBUG - Respuesta recibida: ");
+   /*for (int i = 0; i < BUF_SIZE; i++) {
+        printf("%02X ", response[i]);
+    }*/
+   // printf("\n");
 }
 
 void tarea40() {
@@ -469,7 +487,7 @@ void tarea70() {
     uint8_t frame[BUF_SIZE];
     uint8_t response[BUF_SIZE];
     uint16_t crc;
-    uint64_t tiempo = time(NULL);
+    time_t tiempo = time(NULL);
 
     frame[0] = SLAVE_ADDR;
     frame[1] = 0x70; // Función: escribir datos de configuracion
@@ -494,6 +512,21 @@ void tarea70() {
     send_modbus_request(frame, 17);
     vTaskDelay(pdMS_TO_TICKS(200));
     receive_modbus_response(response, BUF_SIZE);
+
+    RTC_time = tiempo; // Guardar el tiempo actual en la variable global
+    printf("Tiempo RTC actualizado: %lld\n", RTC_time);
+
+    localtime_r(&RTC_time, &RTC_hora); // Convertir el tiempo a la estructura localtime
+
+    ds1307_write_register(0x00, RTC_hora.tm_sec); // segundos
+    ds1307_write_register(0x01, RTC_hora.tm_min); // minutos
+    ds1307_write_register(0x02, RTC_hora.tm_hour); // horas
+    ds1307_write_register(0x04, RTC_hora.tm_wday + 1); // día de la semana (1-7)
+    ds1307_write_register(0x05, RTC_hora.tm_mon + 1); // mes (1-12)
+    ds1307_write_register(0x06, RTC_hora.tm_year - 100); // año (a partir de 2000)
+    ds1307_write_register(0x07,0x93);
+    
+        
 }
 
 void tarea20() {
@@ -529,20 +562,26 @@ void tarea20() {
 
 
     for (uint8_t i = 0; i < MAX_ANIMALES; i++) {
+        
         if (strcmp(animales_leidos_copia[i].nombre, "000000000000000") == 0) {
             // Encontrado espacio libre, copiar auxiliar
             for(uint8_t j = 0; j < 16; j++) {
                 printf("nombre: %c", response[j+7]);
-                printf("\n");
+                //printf("\n");
                 animales_leidos_copia[i].nombre[j] = response[j+7];
-            }
+            }printf("\n");
+            
+
             for(int k = 0; k < 8; k++) {
-                animales_leidos_copia[i].fechaDispensado = animales_leidos_copia[i].fechaDispensado | ((uint64_t)response[23+k] << (8 * (7 - k)));
+                animales_leidos_copia[i].fechaDispensado = animales_leidos_copia[i].fechaDispensado | ((time_t)response[23+k] << (8 * (7 - k)));
             }
             animales_leidos_copia[i].pesoDispensado = response[31];
             animales_leidos_copia[i].nroTolva= response[0];
 
-            printf("Animal agregado en la posición %d: %s\n", i, animales_leidos_copia[i].nombre);
+            printf("1Animal agregado en la posición %d: %s\n", i, animales_leidos_copia[i].nombre);
+            printf("1Fecha dispensado: %lld\n", animales_leidos_copia[i].fechaDispensado);
+            printf("1Peso dispensado: %d\n", animales_leidos_copia[i].pesoDispensado);
+            printf("1Nro Tolva: %d\n", animales_leidos_copia[i].nroTolva);
             break;
         }
     }

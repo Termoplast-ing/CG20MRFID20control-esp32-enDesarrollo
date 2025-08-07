@@ -106,5 +106,9 @@ extern ConfigTolva config_actual;
 extern SemaphoreHandle_t mutex_config;
 extern bool timeOK;
 extern data_animal_leido animal_leido_AUX;
+extern time_t RTC_time;
+extern bool envio_RTC;
+extern struct tm RTC_hora;
+extern time_t RTC_time;
 
 #endif // STRUCTYVAR_H

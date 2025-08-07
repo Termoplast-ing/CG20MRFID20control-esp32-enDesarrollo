@@ -1,9 +1,10 @@
 #include <stdio.h>
-
+#include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h" 
 #include "structyvar.h"
 #include "time.h"
+#include "reloj.h"
 
 // === CONFIGURACIÓN ===
 configuration configuracion_actual = {0};
@@ -276,8 +277,6 @@ tipo_curva curvas_actual[5] = {0};
 tipo_curva curvas_copia[5] = {0};
 SemaphoreHandle_t mutex_curvas = NULL;
 
-
-
 // === TIMESTAMPS ===
 time_t timestamp_animales = 1752138999;
 SemaphoreHandle_t mutex_Tanimales = NULL;
@@ -300,3 +299,32 @@ time_t timestamp_relojRTC = 0;
 // === CONFIG TOLVA ===
 ConfigTolva config_actual = {0};
 SemaphoreHandle_t mutex_config = NULL;
+bool envio_RTC = true;
+time_t RTC_time = 0; // Estructura para almacenar la hora del RTC
+struct tm RTC_hora = {
+    .tm_year = 2025 - 1900,  // año 2025
+    .tm_mon  = 7 - 1,        // julio
+    .tm_mday = 5,            // día 5
+    .tm_hour = 10,           // 10:00 hs
+    .tm_min  = 30,           // 30 minutos
+    .tm_sec  = 0
+};
+
+//funcion nueva
+
+void imprimir_animales_copia(void) {
+    ESP_LOGI("DEBUG", "=== Animales copia ===");
+    for (int i = 0; i < 20; i++) {
+        if (animales_copia[i].nombre[0] == '\0') continue;
+        ESP_LOGI("DEBUG", "Animal %d: nombre=%s, tipoCurva=%d, pesoDosis=%d, fechaServicio=%ld, indiceCorporal=%d, agua=%d, cantDosis=%d, intervaloMin=%d",
+                 i,
+                 animales_copia[i].nombre,
+                 animales_copia[i].tipoCurva,
+                 animales_copia[i].pesoDosis,
+                 (long)animales_copia[i].fechaServicio,
+                 animales_copia[i].indiceCorporal,
+                 animales_copia[i].agua,
+                 animales_copia[i].cantDosis,
+                 animales_copia[i].intervaloMin);
+    }
+}
