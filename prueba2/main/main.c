@@ -23,19 +23,7 @@ void task_modbus_comm(void *param)
         switch (tarea_modbus)
         {
             case 0: { // 
-                /*for(uint8_t j=0; j<20; j++){
-            printf("DATOS ANIMAL %d\n", j);
-            printf("nombre: %s\n", animales_copia[j].nombre);
-            printf("tipoCurva: %d\n", animales_copia[j].tipoCurva);
-            printf("pesoDosis: %d\n", animales_copia[j].pesoDosis);
-            printf("fechaServicio: %lld\n", animales_copia[j].fechaServicio);   
-            printf("indiceCorporal: %d\n", animales_copia[j].indiceCorporal);
-            printf("agua: %d\n", animales_copia[j].agua);   
-            printf("cantDosis: %d\n", animales_copia[j].cantDosis);
-            printf("intervaloMin: %d\n", animales_copia[j].intervaloMin);
-            printf("========================================\n");
-
-        }*/
+                
                 printf("MODBUS: Revisar timestamp de animales\n");
 
                 if (xSemaphoreTake(mutex_animales, pdMS_TO_TICKS(100))) {
@@ -54,11 +42,23 @@ void task_modbus_comm(void *param)
                 } else {
                     printf("MODBUS: No se pudo tomar el mutex_Tanimales\n");
                 }
-                            
+                /*for(uint8_t j=0; j<20; j++){
+                    printf("DATOS ANIMAL %d\n", j);
+                    printf("nombre: %s\n", animales_copia[j].nombre);
+                    printf("tipoCurva: %d\n", animales_copia[j].tipoCurva);
+                    printf("pesoDosis: %d\n", animales_copia[j].pesoDosis);
+                    printf("fechaServicio: %lld\n", animales_copia[j].fechaServicio);   
+                    printf("indiceCorporal: %d\n", animales_copia[j].indiceCorporal);
+                    printf("agua: %d\n", animales_copia[j].agua);   
+                    printf("cantDosis: %d\n", animales_copia[j].cantDosis);
+                    printf("intervaloMin: %d\n", animales_copia[j].intervaloMin);
+                    printf("========================================\n");
+        
+                } */        
                 for(uint8_t i = 0; i < 20; i++) {
                     indice=i;
                     tarea51(indice);
-                    vTaskDelay(pdMS_TO_TICKS(250));
+                    vTaskDelay(pdMS_TO_TICKS(500));
                 }
                                 
                 tarea_modbus = 1; // Cambiar a siguiente tarea
@@ -75,6 +75,32 @@ void task_modbus_comm(void *param)
                 printf("%d\n", configuracion_copia.calibracionMotor);
                 printf("%d\n", configuracion_copia.calibracionAgua);
                 printf("%d\n", configuracion_copia.pesoAnimalDesconocido);
+                printf("Caravana Libre 1 :");
+                for(uint8_t i = 0; i < 16; i++) {
+                    printf("%c", configuracion_copia.caravanaLibre1[i]);
+                }
+                printf("\n");
+                printf("Caravana Libre 2 :");
+                for(uint8_t i = 0; i < 16; i++) {
+                    printf("%c", configuracion_copia.caravanaLibre2[i]);
+                }
+                printf("\n");
+                printf("Caravana Libre 3 :");
+                for(uint8_t i = 0; i < 16; i++) {
+                    printf("%c", configuracion_copia.caravanaLibre3[i]);
+                }
+                printf("\n");
+                printf("Caravana Libre 4 :");
+                for(uint8_t i = 0; i < 16; i++) {
+                    printf("%c", configuracion_copia.caravanaLibre4[i]);
+                }
+                printf("\n");
+                printf("Caravana Libre 5 :");
+                for(uint8_t i = 0; i < 16; i++) {
+                    printf("%c", configuracion_copia.caravanaLibre5[i]);
+                }
+                printf("\n");
+                
                 if (xSemaphoreTake(mutex_Tconfiguracion, pdMS_TO_TICKS(100))) {
                     copia_Tconfiguracion = timestamp_configuracion;
                     xSemaphoreGive(mutex_Tconfiguracion);
@@ -225,8 +251,8 @@ void task_modbus_comm(void *param)
 
 void app_main(void)
 {
-    inicializar_animales_actual_nombre() ;
-    inicializar_config();
+    //inicializar_animales_actual_nombre() ;
+    //inicializar_config();
     inicializar_curvas();
     for(uint8_t i=0; i<100; i++){
     snprintf(animales_leidos_actual[i].nombre, sizeof(animales_leidos_actual[i].nombre), "000000000000000");

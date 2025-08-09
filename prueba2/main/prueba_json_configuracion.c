@@ -59,16 +59,23 @@ void procesar_json_config(const char *json_str) {
         ESP_LOGW(TAG, "Falta calibraciones");
     }
 
-cJSON *car = cJSON_GetObjectItem(obj, "caravanas_libres");
-if (cJSON_IsArray(car)) {
-    cfg_n_caravanas = cJSON_GetArraySize(car);
-    if (cfg_n_caravanas > MAX_CARAVANAS) cfg_n_caravanas = MAX_CARAVANAS;
-
-    for (int i = 0; i < cfg_n_caravanas; i++) {
-        cJSON *it = cJSON_GetArrayItem(car, i);
-        if (cJSON_IsString(it)) {
-            const char *caravana_str = it->valuestring;
-
+    cJSON *car = cJSON_GetObjectItem(obj, "caravanas_libres");
+    if (cJSON_IsArray(car)) {
+        cfg_n_caravanas = cJSON_GetArraySize(car);
+        if (cfg_n_caravanas > MAX_CARAVANAS) cfg_n_caravanas = MAX_CARAVANAS;
+    
+        for (int i = 0; i < cfg_n_caravanas; i++) {
+            cJSON *it = cJSON_GetArrayItem(car, i);
+            const char *caravana_str;
+    
+            // Si el ítem es un string válido y no está vacío, lo usamos
+            if (cJSON_IsString(it) && it->valuestring && strlen(it->valuestring) > 0) {
+                caravana_str = it->valuestring;
+            } else {
+                // Si no hay dato válido, ponemos "0"
+                caravana_str = "0";
+            }
+    
             // Guardar en las variables globales
             switch (i) {
                 case 0:
@@ -92,10 +99,10 @@ if (cJSON_IsArray(car)) {
                     configuracion_actual.caravanaLibre5[15] = '\0';
                     break;
             }
-
+    
             //ESP_LOGI(TAG, "Caravana[%d]=%s", i, caravana_str);
         }
-    }
+    
         /*printf("Caravanas libres guardadas:\n");
         printf("1: %s\n", configuracion_actual.caravanaLibre1);
         printf("2: %s\n", configuracion_actual.caravanaLibre2);
@@ -106,7 +113,7 @@ if (cJSON_IsArray(car)) {
         ESP_LOGW(TAG, "Falta caravana");
     }
 
-    cJSON *ind = cJSON_GetObjectItem(obj, "indice_corporal");
+    /*cJSON *ind = cJSON_GetObjectItem(obj, "indice_corporal");
     if (cJSON_IsObject(ind)) {
         strncpy(cfg_tipo_indice, cJSON_GetObjectItem(ind, "tipo")->valuestring, sizeof(cfg_tipo_indice)-1);
         char tmp[16];
@@ -118,8 +125,8 @@ if (cJSON_IsArray(car)) {
         ESP_LOGI(TAG, "Indice corporal=%s (%d%%)", cfg_tipo_indice, cfg_porcentaje_indice);
     } else {
         ESP_LOGW(TAG, "Falta indice_corporal");
-    }
-
+    }*/
+    timestamp_animales=time(NULL);
     cJSON_Delete(root);
     ESP_LOGI(TAG, "Configuración procesada correctamente");
 }

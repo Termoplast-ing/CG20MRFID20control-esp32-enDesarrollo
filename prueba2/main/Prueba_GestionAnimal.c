@@ -184,6 +184,7 @@ void procesar_json_animal(const char *json_str) {
                 
             }
         }
+        timestamp_animales=time(NULL);
         animales_actual[k].nombre[15] = '\0'; // Asegurar el fin de cadena
         animales_actual[k].tipoCurva = curva; // Asignar tipo de curva
         animales_actual[k].pesoDosis = peso; // Asignar peso

@@ -43,9 +43,9 @@ void send_modbus_request(const uint8_t *frame, int len) {
 int receive_modbus_response(uint8_t *buf, int maxlen) {
 
     int len = uart_read_bytes(UART_NUM2, buf, maxlen, pdMS_TO_TICKS(200));
-    if (len > 0) {
-        for (int i = 0; i < len; i++) printf("%02X ", buf[i]);
-    }
+   // if (len > 0) {
+   //     for (int i = 0; i < len; i++) //printf("%02X ", buf[i]);
+   // }
     return len;
 }
 
