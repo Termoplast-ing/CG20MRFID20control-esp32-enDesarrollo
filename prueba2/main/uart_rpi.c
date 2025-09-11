@@ -82,7 +82,9 @@ void uart_rpi_event_task(void *arg) {
                         cJSON *ts = cJSON_GetObjectItem(root, "timestamp");
                         if (ts && cJSON_IsNumber(ts)) {
                             time_t t = (time_t)(ts->valuedouble);
+                            printf("Actualizando reloj con timestamp funcio JSON: %lld\n", (long long)t);
                             actualizar_reloj(t);
+                            
                             uart_write_bytes(UART_NUM_1, "HORA_RECEBIDA\n", strlen("HORA_RECEBIDA\n"));
                         }
                     } else {

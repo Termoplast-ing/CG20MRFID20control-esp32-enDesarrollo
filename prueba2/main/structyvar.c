@@ -16,7 +16,7 @@ uint8_t indice = 0; // Índice para animales y curvas
 data_animal animales_actual[20] = {0};
 data_animal animales_copia[20] = {0};
 SemaphoreHandle_t mutex_animales = NULL;
-bool timeOK = false; // Variable para indicar si el tiempo está sincronizado
+uint8_t timeOK = 0; // Variable para indicar si el tiempo está sincronizado
 
 
 // Inicialización de nombre para animales_actual[0]
@@ -259,12 +259,19 @@ void inicializar_config(){
 }
 
 void inicializar_curvas(){
-	for(uint8_t i=0;i<5;i++){
-		for(uint8_t j=0;j<18;j++){
-			curvas_actual[i].segmentos[j].inicio = (i+j);
-			curvas_actual[i].segmentos[j].pesoInicio = (i+j)+34;
-		}
-	}
+	curvas_actual[1].segmentos[0].inicio = 1;
+	curvas_actual[1].segmentos[0].pesoInicio = 50;
+	curvas_actual[1].segmentos[1].inicio = 114;
+	curvas_actual[1].segmentos[1].pesoInicio = 100;
+	curvas_actual[2].segmentos[0].inicio = 1;
+	curvas_actual[2].segmentos[0].pesoInicio = 100;
+	curvas_actual[2].segmentos[1].inicio = 114;
+	curvas_actual[2].segmentos[1].pesoInicio = 100;
+	curvas_actual[3].segmentos[0].inicio = 1;
+	curvas_actual[3].segmentos[0].pesoInicio = 100;
+	curvas_actual[3].segmentos[1].inicio = 114;
+	curvas_actual[3].segmentos[1].pesoInicio = 50;
+	
 }
 
 // === ANIMALES LEÍDOS ===
@@ -300,6 +307,7 @@ time_t timestamp_relojRTC = 0;
 ConfigTolva config_actual = {0};
 SemaphoreHandle_t mutex_config = NULL;
 bool envio_RTC = true;
+bool actualizarRTC = true; // Indica si es la primera vez que se sincroniza el RTC
 time_t RTC_time = 0; // Estructura para almacenar la hora del RTC
 struct tm RTC_hora = {
     .tm_year = 2025 - 1900,  // año 2025

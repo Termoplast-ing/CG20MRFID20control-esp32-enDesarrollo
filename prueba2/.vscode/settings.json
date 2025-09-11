@@ -5,7 +5,7 @@
   "idf.openOcdConfigs": [
     "board/esp32-wrover-kit-3.3v.cfg"
   ],
-  "idf.port": "/dev/ttyUSB0",
+  "idf.port": "/dev/ttyUSB1",
   "idf.toolsPath": "/home/blavila/.espressif",
   "idf.customExtraVars": {
     "IDF_TARGET": "esp32"
@@ -13,7 +13,8 @@
   "files.associations": {
     "modbus_master_raw.h": "c",
     "semphr.h": "c",
-    "cstdint": "c"
+    "cstdint": "c",
+    "structyvar.h": "c"
   },
   "idf.flashType": "UART",
   "idf.portWin": "COM6"

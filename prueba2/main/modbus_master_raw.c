@@ -43,9 +43,11 @@ void send_modbus_request(const uint8_t *frame, int len) {
 int receive_modbus_response(uint8_t *buf, int maxlen) {
 
     int len = uart_read_bytes(UART_NUM2, buf, maxlen, pdMS_TO_TICKS(200));
-   // if (len > 0) {
-   //     for (int i = 0; i < len; i++) //printf("%02X ", buf[i]);
-   // }
+    if (len > 0) {
+        for (int i = 0; i < len; i++){ 
+         //   printf("%02X ", buf[i]);
+        }
+    }
     return len;
 }
 
@@ -195,7 +197,7 @@ void tarea51(uint8_t index) {
     }*/
    // printf("\n");
     send_modbus_request(frame, 49);
-    vTaskDelay(pdMS_TO_TICKS(200));
+    vTaskDelay(pdMS_TO_TICKS(500));
     receive_modbus_response(response, BUF_SIZE);
     //printf("DEBUG - Respuesta recibida: ");
    /*for (int i = 0; i < BUF_SIZE; i++) {
@@ -208,6 +210,7 @@ void tarea40() {
     uint8_t frame[BUF_SIZE];
     uint8_t response[BUF_SIZE];
     uint16_t crc;
+    printf("tarea 40\n");
 
     frame[0] = SLAVE_ADDR;
     frame[1] = 0x40; // Función: escribir datos de configuracion
@@ -234,13 +237,34 @@ void tarea40() {
     frame[18] = crc & 0xFF; // CRC byte bajo
     frame[19] = crc >> 8;   // CRC byte alto
     send_modbus_request(frame, 20);
-    vTaskDelay(pdMS_TO_TICKS(200));
-    receive_modbus_response(response, BUF_SIZE);
-    if(response[5] == 0xff && response[6] == 0xff) {
-        timeOK= true; // Indicar que el tiempo está sincronizado
-    } else {
-        timeOK = false; // Indicar que el tiempo no está sincronizado
+    vTaskDelay(pdMS_TO_TICKS(2));
+   // receive_modbus_response(response, 9);
+     //   vTaskDelay(pdMS_TO_TICKS(200));
+       // printf("DEBUG - Respuesta recibida: ");
+
+   
+int length = uart_read_bytes(UART_NUM_2, response, BUF_SIZE, pdMS_TO_TICKS(1000)); // espera hasta 1 segundo
+
+if (length > 0) {
+    printf("Respuesta recibida (%d bytes): ", length);
+    for (int i = 0; i < length; i++) {
+        printf("%02X ", response[i]);
     }
+    printf("\n");
+} else {
+    printf("No se recibieron datos o timeout\n");
+}
+    //for (int i = 0; i < BUF_SIZE; i++) {
+     //   printf("%02X ", response[i]);
+   // }
+    if(response[25] == 0xff && response[26] == 0xff) {
+        timeOK= 1; // Indicar que el tiempo está sincronizado
+    } else {
+        timeOK = 0; // Indicar que el tiempo no está sincronizado
+    }
+    
+    printf("timeOK: %d\n", timeOK);
+     
 }
 
 void tarea41() {
@@ -487,7 +511,9 @@ void tarea70() {
     uint8_t frame[BUF_SIZE];
     uint8_t response[BUF_SIZE];
     uint16_t crc;
-    time_t tiempo = time(NULL);
+
+    read_time();
+        time_t tiempo = RTC_time;
 
     frame[0] = SLAVE_ADDR;
     frame[1] = 0x70; // Función: escribir datos de configuracion
@@ -518,13 +544,13 @@ void tarea70() {
 
     localtime_r(&RTC_time, &RTC_hora); // Convertir el tiempo a la estructura localtime
 
-    ds1307_write_register(0x00, RTC_hora.tm_sec); // segundos
-    ds1307_write_register(0x01, RTC_hora.tm_min); // minutos
-    ds1307_write_register(0x02, RTC_hora.tm_hour); // horas
-    ds1307_write_register(0x04, RTC_hora.tm_wday + 1); // día de la semana (1-7)
-    ds1307_write_register(0x05, RTC_hora.tm_mon + 1); // mes (1-12)
-    ds1307_write_register(0x06, RTC_hora.tm_year - 100); // año (a partir de 2000)
-    ds1307_write_register(0x07,0x93);
+   // ds1307_write_register(0x00, RTC_hora.tm_sec); // segundos
+   // ds1307_write_register(0x01, RTC_hora.tm_min); // minutos
+   // ds1307_write_register(0x02, RTC_hora.tm_hour); // horas
+   // ds1307_write_register(0x04, RTC_hora.tm_wday + 1); // día de la semana (1-7)
+    ///ds1307_write_register(0x05, RTC_hora.tm_mon + 1); // mes (1-12)
+   // ds1307_write_register(0x06, RTC_hora.tm_year - 100); // año (a partir de 2000)
+   // ds1307_write_register(0x07,0x93);
     
         
 }

@@ -9,7 +9,7 @@
 #define I2C_SCL GPIO_NUM_22
 #define TIMEOUT_MS 1000
 
-
+esp_err_t read_time(void);
 
 /////inicializacion de la comunicacion I2C (SDA = GPIO21)(SCL = GPIO22)/////
 void init_i2c() {
@@ -23,6 +23,12 @@ void init_i2c() {
     };
     ESP_ERROR_CHECK(i2c_param_config(I2C_NUM_0, &i2c_config));
     ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0));
+
+    vTaskDelay(pdMS_TO_TICKS(100));
+    
+    struct timeval now = { .tv_sec = RTC_time, .tv_usec = 0 };
+    settimeofday(&now, NULL);
+read_time(); // Leer la hora inicial del RTC
 }
 
 uint8_t convertir_a_bcd(uint8_t numero) {
@@ -72,7 +78,7 @@ esp_err_t read_time() {
         if (result == ESP_OK) break;
         vTaskDelay(pdMS_TO_TICKS(100));
     }
-
+    printf("reloj del READ %02X:%02X:%02X - %02X/%02X/%02X\n", seconds, minutes, hours, day, month, year);
     if (result != ESP_OK) {
         printf("Error al leer la hora del DS1307 tras múltiples intentos\n");
         return ESP_FAIL;
@@ -85,7 +91,11 @@ esp_err_t read_time() {
     RTC_hora.tm_mday = bcd_to_decimal(day);
     RTC_hora.tm_mon = bcd_to_decimal(month) - 1;
     RTC_hora.tm_year = bcd_to_decimal(year) + 100;
+    RTC_time = mktime(&RTC_hora);
+    printf("time RTC_time READ: %lld\n", RTC_time);
     return ESP_OK;
+
+    
 }
 
 void actualizar_reloj(time_t timestamp) {
@@ -96,6 +106,7 @@ void actualizar_reloj(time_t timestamp) {
     
 
     localtime_r(&timestamp, &RTC_hora); // Convertir el tiempo a la estructura localtime
+    RTC_time= timestamp;
 
     printf("Hora actual: %02d:%02d:%02d\n", RTC_hora.tm_hour, RTC_hora.tm_min, RTC_hora.tm_sec);
     printf("Fecha actual: %02d/%02d/%04d\n", RTC_hora.tm_mday, RTC_hora.tm_mon + 1, RTC_hora.tm_year + 1900);
@@ -115,6 +126,8 @@ void actualizar_reloj(time_t timestamp) {
     ds1307_write_register(0x06, RTC_hora.tm_year); // año (a partir de 2000)
     
     ds1307_write_register(0x07,0x93);
+
+    actualizarRTC = true;
 
 
 }

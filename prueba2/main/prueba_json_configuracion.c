@@ -126,7 +126,7 @@ void procesar_json_config(const char *json_str) {
     } else {
         ESP_LOGW(TAG, "Falta indice_corporal");
     }*/
-    timestamp_animales=time(NULL);
+    timestamp_configuracion=time(NULL);
     cJSON_Delete(root);
     ESP_LOGI(TAG, "Configuración procesada correctamente");
 }

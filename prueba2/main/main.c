@@ -13,7 +13,7 @@
 #include "driver/i2c.h"
 #include "reloj.h"
 
-char tarea_modbus = 0;
+char tarea_modbus = 100;
 
 void task_modbus_comm(void *param)
 {
@@ -111,9 +111,10 @@ void task_modbus_comm(void *param)
                // printf("5: %02X 6: %02X\n",response[5], response[6]);
                 vTaskDelay(pdMS_TO_TICKS(250));
                // printf("5: %02X 6: %02X\n",response[5], response[6]);
+               printf("timeOK: %d\n", timeOK);
                 if(timeOK) {
                     printf("MODBUS: estoy aca\n");
-                    timeOK= false; // Reiniciar la variable timeOK
+                    timeOK= 0; // Reiniciar la variable timeOK
                     vTaskDelay(pdMS_TO_TICKS(250));
                     tarea41();
                     
@@ -121,11 +122,11 @@ void task_modbus_comm(void *param)
                     printf("MODBUS: completado al enviar datos de animales\n");
                 }
                 printf("MODBUS: Enviar Configuracion\n");
-                tarea_modbus = 2; // Cambiar a siguiente tarea
+                tarea_modbus = 3; // Cambiar a siguiente tarea
                 break;
             }
             
-            case 2: {// case para mandar curvas
+           /* case 2: {// case para mandar curvas
                 if (xSemaphoreTake(mutex_curvas, pdMS_TO_TICKS(100))) {
                     for (uint8_t i = 0; i < 5; i++) {
                         curvas_copia[i] = curvas_actual[i];
@@ -164,16 +165,16 @@ void task_modbus_comm(void *param)
                 }
                 printf("MODBUS: Enviar datos curva\n");
                 
-/*for(uint8_t i=0;i<5;i++){
+for(uint8_t i=0;i<5;i++){
             printf("imprimiendo curva %d\n", i);
             for(uint8_t j=0;j<17;j++){
               //  printf("Segmento %d: Inicio: %d, Peso Inicio: %d\n", j, curvas_copia[i].segmentos[j].inicio, curvas_copia[i].segmentos[j].pesoInicio);
             }
-        }*/
+        }*//*
                 tarea_modbus = 3; // Cambiar a siguiente tarea
                 break;
             
-            }
+            }*/
             
             case 3: { // recuperar datos de animales leido
                 if (xSemaphoreTake(mutex_animales_leidos, pdMS_TO_TICKS(100))) {
@@ -217,16 +218,29 @@ void task_modbus_comm(void *param)
         
             case 4: { // envion RTC
                 read_time();
+                printf("timestamp actual esp: %lld\n", time(NULL));
+                printf("timestamp actual rtc: %lld\n", RTC_time);
  printf("Hora actual: %02d:%02d:%02d\n", RTC_hora.tm_hour, RTC_hora.tm_min, RTC_hora.tm_sec);
     printf("Fecha actual: %02d/%02d/%04d\n", RTC_hora.tm_mday, RTC_hora.tm_mon + 1, RTC_hora.tm_year + 1900);
-                if (RTC_hora.tm_hour == 0) {
+    if (RTC_hora.tm_hour == 0) {
                     if(envio_RTC){
+                        printf("holaRTC\n");
                         tarea70();
                         envio_RTC = false; // Reiniciar la variable envio_RTC
+                    }else{
+                        if(actualizarRTC){
+                            tarea70();
+                            actualizarRTC = false; // Reiniciar la variable actualizarRTC
+                        }
                     }
                 }else{
+                    if(actualizarRTC){
+                        tarea70();
+                        actualizarRTC = false; // Reiniciar la variable actualizarRTC
+                    }
                     envio_RTC = true; // Indicar que se debe enviar el RTC
                 }        
+
                 tarea_modbus = 5; // Cambiar a primera tarea
                 break;
             }
@@ -235,6 +249,69 @@ void task_modbus_comm(void *param)
             case 5: { // Enviar animales leídos por UART
                 enviar_animales_leidos_uart();
                 tarea_modbus = 0; // Reiniciar a la primera tarea
+                break;
+            }
+
+            // Agregá más casos según necesites... NUEVO CASE
+            case 100: {  // Enviar hora RTC a Raspberry en formato legible
+                // Leer hora del RTC externo
+                read_time();
+
+                // Verificar si los segundos son inválidos (ej: 80 por pila agotada)
+               
+                if (RTC_hora.tm_sec > 59) {
+                    printf("RTC inválido detectado (segundos=%d). Reiniciando a fecha base...\n", RTC_hora.tm_sec);
+
+                    // Configurar fecha base: 2000-01-01 00:00:00
+                    RTC_hora.tm_year = 2000 - 1900; // struct tm cuenta desde 1900
+                    RTC_hora.tm_mon  = 0;           // enero = 0
+                    RTC_hora.tm_mday = 1;
+                    RTC_hora.tm_hour = 0;
+                    RTC_hora.tm_min  = 0;
+                    RTC_hora.tm_sec  = 0;
+
+                    // Convertir a time_t y escribir al RTC
+                    time_t base_time = mktime(&RTC_hora);
+                    actualizar_reloj(base_time);
+
+                    // Leer de nuevo para confirmar
+                    read_time();
+                }
+
+                /* if rtc en segundos 80
+                    voy a escribir reloj con 1/1/2000 00:00:00
+                    y despues vuelvo a leer*/
+
+                // Preparar buffer para UART
+                char buffer[64];
+                snprintf(buffer, sizeof(buffer),
+                        "<%04d-%02d-%02d %02d:%02d:%02d>",
+                        RTC_hora.tm_year + 1900,
+                        RTC_hora.tm_mon + 1,
+                        RTC_hora.tm_mday,
+                        RTC_hora.tm_hour,
+                        RTC_hora.tm_min,
+                        RTC_hora.tm_sec);
+
+                // Limpiar buffer de entrada UART
+                printf("Enviando hora RTC a Raspberry: %s\n", buffer);
+                uart_flush_input(UART_NUM_1);
+
+                // Bucle: enviar timestamp hasta recibir "OK"
+                char respuesta[3] = {0};
+                while (1) {
+                    uart_write_bytes(UART_NUM_1, buffer, strlen(buffer));
+
+                    int len = uart_read_bytes(UART_NUM_1, (uint8_t*)respuesta, 2, pdMS_TO_TICKS(500));
+                    if (len == 2 && strncmp(respuesta, "OK", 2) == 0) {
+                        printf("OK recibido, continuando...\n");
+                        break;
+                    }
+
+                    vTaskDelay(pdMS_TO_TICKS(500)); // esperar antes de reintentar
+                }
+
+                tarea_modbus = 0;  // continuar con la siguiente tarea
                 break;
             }
 
@@ -253,7 +330,7 @@ void app_main(void)
 {
     //inicializar_animales_actual_nombre() ;
     //inicializar_config();
-    inicializar_curvas();
+    //inicializar_curvas();
     for(uint8_t i=0; i<100; i++){
     snprintf(animales_leidos_actual[i].nombre, sizeof(animales_leidos_actual[i].nombre), "000000000000000");
     }
