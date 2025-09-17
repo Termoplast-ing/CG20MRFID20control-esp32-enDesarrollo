@@ -11,7 +11,7 @@
 #include "reloj.h"
 #include "envio_animal_leido.h"
 
-#define UART_BUF_SIZE 1024
+#define UART_BUF_SIZE 2048
 #define UART_RX 27
 #define UART_TX 26
 #define TAG "UART_RPI"
@@ -87,6 +87,12 @@ void uart_rpi_event_task(void *arg) {
                             
                             uart_write_bytes(UART_NUM_1, "HORA_RECEBIDA\n", strlen("HORA_RECEBIDA\n"));
                         }
+                    } else if(cJSON_GetObjectItem(root, "OK")){
+                        // Respuesta simple "OK"
+                        printf("holis");
+                        uart_write_bytes(UART_NUM_1, "OK_RECEIVED\n", strlen("OK_RECEIVED\n"));
+                        respuesta[0] = 'O';
+                        respuesta[1] = 'K';                       
                     } else {
                         ESP_LOGW(TAG, "JSON no reconocido");
                     }

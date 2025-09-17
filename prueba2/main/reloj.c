@@ -26,9 +26,9 @@ void init_i2c() {
 
     vTaskDelay(pdMS_TO_TICKS(100));
     
-    struct timeval now = { .tv_sec = RTC_time, .tv_usec = 0 };
-    settimeofday(&now, NULL);
-read_time(); // Leer la hora inicial del RTC
+    //struct timeval now = { .tv_sec = RTC_time, .tv_usec = 0 };
+    //settimeofday(&now, NULL);
+    read_time(); // Leer la hora inicial del DS1307
 }
 
 uint8_t convertir_a_bcd(uint8_t numero) {
@@ -93,6 +93,8 @@ esp_err_t read_time() {
     RTC_hora.tm_year = bcd_to_decimal(year) + 100;
     RTC_time = mktime(&RTC_hora);
     printf("time RTC_time READ: %lld\n", RTC_time);
+    struct timeval now = { .tv_sec = RTC_time, .tv_usec = 0 };
+    settimeofday(&now, NULL);
     return ESP_OK;
 
     

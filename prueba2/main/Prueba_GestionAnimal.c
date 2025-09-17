@@ -126,17 +126,18 @@ void gestion_animal(QueueHandle_t q) {
 //static bool capturando_animal = false;
 
 static int curva_str_a_int(const char *s) {
-    if (strcmp(s, "Flaca") == 0) return 1;
-    if (strcmp(s, "Mediana") == 0) return 2;
-    if (strcmp(s, "Gorda") == 0) return 3;
-    return -1;
+    if (strcmp(s, "Ascendente") == 0) return 1;
+    if (strcmp(s, "Constante") == 0) return 2;
+    if (strcmp(s, "Descendente") == 0) return 3;
+    if (strcmp(s, "Forma V") == 0) return 4;
+    return 2;
 }
 
 static int indice_str_a_int(const char *s) {
-    if (strstr(s, "Bajo") == s) return 1;
+    if (strstr(s, "Gorda") == s) return 1;
     if (strstr(s, "Normal") == s) return 2;
-    if (strstr(s, "Alto") == s) return 3;
-    return -1;
+    if (strstr(s, "Flaca") == s) return 3;
+    return 2;
 }
 
 void procesar_json_animal(const char *json_str) {
@@ -153,21 +154,50 @@ void procesar_json_animal(const char *json_str) {
 
         const char *car = cJSON_GetObjectItem(an, "caravana")->valuestring;
 
+         if(car==NULL){
+            car="000000000000000";
+        }else{
+            if(strlen(car)>15){
+                car="000000000000000";
+            }
+        }
+
         time_t inse = 0;
         cJSON *ins = cJSON_GetObjectItem(an, "inseminacion");
-        if (cJSON_IsNumber(ins)) inse = ins->valuedouble;
-        else if (cJSON_IsString(ins)) inse = atoll(ins->valuestring);
+        if(ins!=NULL){
+            if (cJSON_IsNumber(ins)) inse = ins->valuedouble;
+            else if (cJSON_IsString(ins)) inse = atoll(ins->valuestring);
+        }else{
+            inse=946695600; // 01/01/2000
+        }
 
         uint8_t agua = cJSON_GetObjectItem(an, "agua")->valueint;
 
         const char *cur_str = cJSON_GetObjectItem(an, "curva")->valuestring;
+        if(cur_str==NULL){
+            cur_str="Constante";
+        }
+    
         uint8_t curva = curva_str_a_int(cur_str);
 
         const char *ind_str = cJSON_GetObjectItem(an, "indice")->valuestring;
+        if(ind_str==NULL){
+            ind_str="Normal";
+        }
         uint8_t indice = indice_str_a_int(ind_str);
 
         cJSON *ps = cJSON_GetObjectItem(an, "peso");
-        uint8_t peso = cJSON_IsNumber(ps) ? (int)ps->valuedouble : atoi(ps->valuestring);
+        uint8_t peso = 0;
+        if(ps!=NULL){
+            if(cJSON_IsNumber(ps)){
+                peso = (int)ps->valuedouble;
+            }else if(cJSON_IsString(ps)){
+                peso = atoi(ps->valuestring);
+            }
+        }else{
+            peso=0;
+        }
+        //uint8_t peso = cJSON_IsNumber(ps) ? (int)ps->valuedouble : atoi(ps->valuestring);
 
         uint8_t dosis = cJSON_GetObjectItem(an, "dosis")->valueint;
         uint8_t intervalo = cJSON_GetObjectItem(an, "intervalo")->valueint;

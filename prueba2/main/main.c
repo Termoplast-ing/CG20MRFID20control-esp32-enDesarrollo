@@ -1,4 +1,4 @@
-// 📁 main.c
+//  main.c
 #include <stdio.h>
 #include <string.h>
 #include "freertos/FreeRTOS.h"
@@ -298,15 +298,24 @@ for(uint8_t i=0;i<5;i++){
                 uart_flush_input(UART_NUM_1);
 
                 // Bucle: enviar timestamp hasta recibir "OK"
-                char respuesta[3] = {0};
+                //char respuesta[3] = {0};
                 while (1) {
                     uart_write_bytes(UART_NUM_1, buffer, strlen(buffer));
 
-                    int len = uart_read_bytes(UART_NUM_1, (uint8_t*)respuesta, 2, pdMS_TO_TICKS(500));
-                    if (len == 2 && strncmp(respuesta, "OK", 2) == 0) {
-                        printf("OK recibido, continuando...\n");
+                    //int len = uart_read_bytes(UART_NUM_1, (uint8_t*)respuesta, 2, pdMS_TO_TICKS(500));
+                    
+                    //int len=0;
+                    //if (len == 2 && strncmp(respuesta, "OK", 2) == 0) {
+                    printf("%s\n", respuesta);
+                    if (strncmp(respuesta, "OK", 2) == 0) {
+                    printf("OK recibido, continuando...\n");
                         break;
                     }
+                    
+                    /*if (len == 2 && strncmp(respuesta, "OK", 2) == 0) {
+                        printf("OK recibido, continuando...\n");
+                        break;
+                    }*/
 
                     vTaskDelay(pdMS_TO_TICKS(500)); // esperar antes de reintentar
                 }

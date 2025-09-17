@@ -111,5 +111,6 @@ extern bool envio_RTC;
 extern struct tm RTC_hora;
 extern time_t RTC_time;
 extern bool actualizarRTC;
+extern char respuesta[2];
 
 #endif // STRUCTYVAR_H
