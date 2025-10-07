@@ -583,31 +583,41 @@ void tarea20() {
     frame[8] = crc & 0xFF; // CRC byte bajo
     frame[9] = crc >> 8;   // CRC byte alto
     send_modbus_request(frame, 10);
-    vTaskDelay(pdMS_TO_TICKS(250));
-    receive_modbus_response(response, BUF_SIZE);  
+    vTaskDelay(pdMS_TO_TICKS(2));
+    int length = uart_read_bytes(UART_NUM_2, response, BUF_SIZE, pdMS_TO_TICKS(1000)); // espera hasta 1 segundo
+
+if (length > 0) {
+    printf("Respuesta recibida (%d bytes): ", length);
+    for (int i = 0; i < length; i++) {
+        printf("%02X ", response[i]);
+    }
+    printf("\n");
+} else {
+    printf("No se recibieron datos o timeout\n");
+}
 
 
     for (uint8_t i = 0; i < MAX_ANIMALES; i++) {
-        
-        if (strcmp(animales_leidos_copia[i].nombre, "000000000000000") == 0) {
+
+        if ((strcmp(animales_leidos_actual[i].nombre, "000000000000000") == 0) || (animales_leidos_actual[i].nombre[0]=='\0')){
             // Encontrado espacio libre, copiar auxiliar
             for(uint8_t j = 0; j < 16; j++) {
-                printf("nombre: %c", response[j+7]);
+                printf("nombre: %c", response[j+17]);
                 //printf("\n");
-                animales_leidos_copia[i].nombre[j] = response[j+7];
+                animales_leidos_actual[i].nombre[j] = response[j+17];
             }printf("\n");
             
 
             for(int k = 0; k < 8; k++) {
-                animales_leidos_copia[i].fechaDispensado = animales_leidos_copia[i].fechaDispensado | ((time_t)response[23+k] << (8 * (7 - k)));
+                animales_leidos_actual[i].fechaDispensado = animales_leidos_actual[i].fechaDispensado | ((time_t)response[33+k] << (8 * (7 - k)));
             }
-            animales_leidos_copia[i].pesoDispensado = response[31];
-            animales_leidos_copia[i].nroTolva= response[0];
+            animales_leidos_actual[i].pesoDispensado = response[41];
+            animales_leidos_actual[i].nroTolva= response[0];
 
-            printf("1Animal agregado en la posición %d: %s\n", i, animales_leidos_copia[i].nombre);
-            printf("1Fecha dispensado: %lld\n", animales_leidos_copia[i].fechaDispensado);
-            printf("1Peso dispensado: %d\n", animales_leidos_copia[i].pesoDispensado);
-            printf("1Nro Tolva: %d\n", animales_leidos_copia[i].nroTolva);
+            printf("1Animal agregado en la posición %d: %s\n", i, animales_leidos_actual[i].nombre);
+            printf("1Fecha dispensado: %lld\n", animales_leidos_actual[i].fechaDispensado);
+            printf("1Peso dispensado: %d\n", animales_leidos_actual[i].pesoDispensado);
+            printf("1Nro Tolva: %d\n", animales_leidos_actual[i].nroTolva);
             break;
         }
     }

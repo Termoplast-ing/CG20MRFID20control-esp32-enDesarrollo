@@ -44,7 +44,7 @@ void task_modbus_comm(void *param)
                 }
                 /*for(uint8_t j=0; j<20; j++){
                     printf("DATOS ANIMAL %d\n", j);
-                    printf("nombre: %s\n", animales_copia[j].nombre);
+                    printf("nombre: %s copia: %s\n", animales_copia[j].nombre, animales_actual[j].nombre);
                     printf("tipoCurva: %d\n", animales_copia[j].tipoCurva);
                     printf("pesoDosis: %d\n", animales_copia[j].pesoDosis);
                     printf("fechaServicio: %lld\n", animales_copia[j].fechaServicio);   
@@ -54,7 +54,7 @@ void task_modbus_comm(void *param)
                     printf("intervaloMin: %d\n", animales_copia[j].intervaloMin);
                     printf("========================================\n");
         
-                } */        
+                }*/         
                 for(uint8_t i = 0; i < 20; i++) {
                     indice=i;
                     tarea51(indice);
@@ -165,7 +165,7 @@ void task_modbus_comm(void *param)
                 }
                 printf("MODBUS: Enviar datos curva\n");
                 
-for(uint8_t i=0;i<5;i++){
+    for(uint8_t i=0;i<5;i++){
             printf("imprimiendo curva %d\n", i);
             for(uint8_t j=0;j<17;j++){
               //  printf("Segmento %d: Inicio: %d, Peso Inicio: %d\n", j, curvas_copia[i].segmentos[j].inicio, curvas_copia[i].segmentos[j].pesoInicio);
@@ -177,12 +177,15 @@ for(uint8_t i=0;i<5;i++){
             }*/
             
             case 3: { // recuperar datos de animales leido
-                if (xSemaphoreTake(mutex_animales_leidos, pdMS_TO_TICKS(100))) {
+                                tarea20();
+                vTaskDelay(pdMS_TO_TICKS(250));
+                               char msg[85];
+              /*  if (xSemaphoreTake(mutex_animales_leidos, pdMS_TO_TICKS(100))) {
                     for(uint8_t i=0; i<100 ; i++){
                         animales_leidos_copia[i] = animales_leidos_actual[i];
                     }
                     xSemaphoreGive(mutex_animales_leidos);
-
+    */
                     // Imprimir para corroborar que animales_leidos_actual tiene los datos guardados
                     /*printf("Imprimiendo animales_leidos_actual después de copiar:\n");
                     for (uint8_t i = 0; i < 100; i++) {
@@ -193,24 +196,38 @@ for(uint8_t i=0;i<5;i++){
                             printf("  Nro Tolva: %d\n", animales_leidos_actual[i].nroTolva);
                         }
                     }*/ 
-                } else {
-                    printf("MODBUS: No se pudo tomar el mutex_Tanimales\n");
-                }               
-                tarea20();
-                vTaskDelay(pdMS_TO_TICKS(250));
+               // } else {
+                //    printf("MODBUS: No se pudo tomar el mutex_Tanimales\n");
+                //}               
+
                 /* if(response[5]==0xff && response[6]==0xff) {
                     for(uint8_t i = 0; i < 9; i++) {
                         response[i]=0;
                     }
                     tarea81();
                 }*/
+
                 for (uint8_t i = 0; i < 100; i++) {
-                    if (strcmp(animales_leidos_copia[i].nombre, "000000000000000") != 0) {
-                        printf("Animal %d: %s\n", i, animales_leidos_copia[i].nombre);
-                        printf("Fecha dispensado: %lld\n", animales_leidos_copia[i].fechaDispensado);
-                        printf("Peso dispensado: %02x\n", animales_leidos_copia[i].pesoDispensado);
-                        printf("Nro Tolva: %02x\n", animales_leidos_copia[i].nroTolva);
-                    }
+                    if ((strcmp(animales_leidos_actual[i].nombre, "000000000000000") == 0)|| (animales_leidos_actual[i].nombre[0] == '\0')) {
+                        if(i>0){
+                            snprintf(msg, sizeof(msg),
+                                "<<<[{\"caravana\":\"%s\",\"fecha\":%lld,\"peso\":%d,\"corral\":%d}]>>>",
+                                animales_leidos_actual[i-1].nombre, animales_leidos_actual[i-1].fechaDispensado, animales_leidos_actual[i-1].pesoDispensado, animales_leidos_actual[i-1].nroTolva);
+                            printf("Envio La CARAVANA: %s\n", msg);
+                            uart_flush_input(UART_NUM_1);
+                            vTaskDelay(pdMS_TO_TICKS(100));
+                            uart_write_bytes(UART_NUM_1, msg, strlen(msg));
+                            vTaskDelay(pdMS_TO_TICKS(500));
+                            //animales_leidos_actual[i-1]= {0};
+                            strncpy(animales_leidos_actual[i-1].nombre, "000000000000000", sizeof(animales_leidos_actual[i-1].nombre));
+                            //animales_leidos_actual[i-1].nombre[15] = '\0';
+                            animales_leidos_actual[i-1].fechaDispensado = 0;
+                            animales_leidos_actual[i-1].pesoDispensado = 0;
+                            animales_leidos_actual[i-1].nroTolva = 0;
+                            break;       
+                        }
+                        break; 
+                    }                    
                 }
                 tarea_modbus = 4; // Cambiar a primera tarea
                 break;

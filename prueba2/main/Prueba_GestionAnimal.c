@@ -116,6 +116,7 @@ void gestion_animal(QueueHandle_t q) {
 #include "esp_log.h"
 #include "cJSON.h"
 #include "structyvar.h"
+#include "reloj.h"
 
 #define UART_PORT UART_NUM_1
 #define BUF_SIZE 1024
@@ -141,6 +142,9 @@ static int indice_str_a_int(const char *s) {
 }
 
 void procesar_json_animal(const char *json_str) {
+    read_time();
+
+    timestamp_animales = RTC_time; // Actualizar timestamp al procesar nuevos datos
     cJSON *root = cJSON_Parse(json_str);
     if (!root || !cJSON_IsArray(root)) {
         ESP_LOGE(TAG, "JSON inválido (animal): %s", json_str);
@@ -155,10 +159,10 @@ void procesar_json_animal(const char *json_str) {
         const char *car = cJSON_GetObjectItem(an, "caravana")->valuestring;
 
          if(car==NULL){
-            car="000000000000000";
+            car="";
         }else{
             if(strlen(car)>15){
-                car="000000000000000";
+                car="";
             }
         }
 
@@ -204,26 +208,52 @@ void procesar_json_animal(const char *json_str) {
 
         ESP_LOGI(TAG, "Animal: caravana=%s, inseminacion=%lld, agua=%d, curva=%d, indice=%d, peso=%d, dosis=%d, intervalo=%d",
                  car, inse, agua, curva, indice, peso, dosis, intervalo);
-
-        for(uint8_t i =0 ; i<16; i++){
-            if (i < strlen(car)) {
-                animales_actual[k].nombre[i] = car[i];
-                //printf("%c", animales_actual[k].nombre[i]);
-            } else {
-                animales_actual[indice].nombre[k] = '0'; // Rellenar con '0' si es necesario
-                
+        int aux=-1;
+        for(uint8_t j=0; j<20 ; j++){
+            printf("Comparando con animal índice %d: %s\n", j, animales_actual[j].nombre);
+            printf("car: %s\n", car);
+            if(strcmp(animales_actual[j].nombre, car)==0){
+                aux=j;
+                break;
             }
         }
+        printf("aux después de buscar coincidencia: %d\n", aux);
+        if(aux==-1){
+            for(uint8_t j=0; j<20 ; j++){
+                printf("Comparando con animal índice %d: %s\n", j, animales_actual[j].nombre);
+            printf("car: %s\n", car);
+                if((strcmp(animales_actual[j].nombre, "000000000000000")==0)||((animales_actual[j].nombre[0]=='\0'))){
+                    aux=j;
+                    break;
+                }
+            }
+        }
+        if(aux>=0 && aux<20){
+            //printf("aux: %d\n", aux);
+            //printf("car: %s\n", car);
+            //
+        printf("Asignando datos al animal índice %d\n", aux);
+                 for(uint8_t i =0 ; i<16; i++){
+            if (i < strlen(car)) {
+                animales_actual[aux].nombre[i] = car[i];
+                //printf("%c", animales_actual[k].nombre[i]);
+            } //else {
+              //animales_actual[indice].nombre[k] = '0'; // Rellenar con '0' si es necesario
+                
+            //}
+        }
         timestamp_animales=time(NULL);
-        animales_actual[k].nombre[15] = '\0'; // Asegurar el fin de cadena
-        animales_actual[k].tipoCurva = curva; // Asignar tipo de curva
-        animales_actual[k].pesoDosis = peso; // Asignar peso
-        animales_actual[k].fechaServicio = inse; // Asignar fecha de servicio
-        animales_actual[k].agua = agua; // Asignar agua
-        animales_actual[k].indiceCorporal = indice; // Asignar índice corporal
-        animales_actual[k].cantDosis = dosis; // Asignar peso
-        animales_actual[k].intervaloMin = intervalo; // Asignar intervalo
-       /* printf("%d\n", k);
+        animales_actual[aux].nombre[15] = '\0'; // Asegurar el fin de cadena
+        animales_actual[aux].tipoCurva = curva; // Asignar tipo de curva
+        animales_actual[aux].pesoDosis = peso; // Asignar peso
+        animales_actual[aux].fechaServicio = inse; // Asignar fecha de servicio
+        animales_actual[aux].agua = agua; // Asignar agua
+        animales_actual[aux].indiceCorporal = indice; // Asignar índice corporal
+        animales_actual[aux].cantDosis = dosis; // Asignar peso
+        animales_actual[aux].intervaloMin = intervalo; // Asignar intervalo
+    }else{
+    ESP_LOGW(TAG, "No hay espacio para más animales o índice inválido");
+    }/* printf("%d\n", k);
         printf("%d\n", peso);
         printf("%d\n", animales_actual[k].pesoDosis);
         printf("%d\n", animales_actual[k].tipoCurva);

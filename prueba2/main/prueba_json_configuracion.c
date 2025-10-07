@@ -10,6 +10,7 @@
 #include "esp_log.h"
 #include "structyvar.h"
 #include "cJSON.h"
+#include "reloj.h"
 
 #define UART_PORT UART_NUM_1
 #define BUF_SIZE 1024
@@ -28,6 +29,9 @@ static char cfg_tipo_indice[64] = {0};
 static int cfg_porcentaje_indice = 0;
 
 void procesar_json_config(const char *json_str) {
+    read_time();
+
+    timestamp_configuracion = RTC_time; // Actualizar timestamp al procesar nuevos datos
     cJSON *root = cJSON_Parse(json_str);
     if (!root) {
         ESP_LOGE(TAG, "Error al parsear JSON");

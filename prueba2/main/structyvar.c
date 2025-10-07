@@ -18,6 +18,7 @@ data_animal animales_copia[20] = {0};
 SemaphoreHandle_t mutex_animales = NULL;
 uint8_t timeOK = 0; // Variable para indicar si el tiempo está sincronizado
 char respuesta[2] = {}; // Respuesta OK del RTC
+data_animal_leido animal_leido_AUX={0};
 
 
 // Inicialización de nombre para animales_actual[0]
