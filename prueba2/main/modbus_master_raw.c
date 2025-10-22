@@ -151,6 +151,7 @@ void tarea51(uint8_t index) {
     //snprintf((char *)&frame[17], sizeof(frame) - 17, "%s", animal.nombre);
    // printf("enviado animal: %d\n", index);
         // Timestamp de central
+        printf("copia_Tanimales: %lld\n", copia_Tanimales);
         
             frame[7] = (copia_Tanimales >> 56) & 0xFF;
             frame[8] = (copia_Tanimales >> 48) & 0xFF;
@@ -605,7 +606,8 @@ if (length > 0) {
                 printf("nombre: %c", response[j+17]);
                 //printf("\n");
                 animales_leidos_actual[i].nombre[j] = response[j+17];
-            }printf("\n");
+            }
+            printf("\n");
             
 
             for(int k = 0; k < 8; k++) {

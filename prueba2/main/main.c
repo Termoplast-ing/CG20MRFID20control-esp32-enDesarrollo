@@ -22,7 +22,7 @@ void task_modbus_comm(void *param)
         printf("tarea MODBUS: %d\n", tarea_modbus);
         switch (tarea_modbus)
         {
-            case 0: { // 
+            case 1: { // 
                 
                 printf("MODBUS: Revisar timestamp de animales\n");
 
@@ -42,7 +42,7 @@ void task_modbus_comm(void *param)
                 } else {
                     printf("MODBUS: No se pudo tomar el mutex_Tanimales\n");
                 }
-                /*for(uint8_t j=0; j<20; j++){
+                for(uint8_t j=0; j<20; j++){
                     printf("DATOS ANIMAL %d\n", j);
                     printf("nombre: %s copia: %s\n", animales_copia[j].nombre, animales_actual[j].nombre);
                     printf("tipoCurva: %d\n", animales_copia[j].tipoCurva);
@@ -54,18 +54,19 @@ void task_modbus_comm(void *param)
                     printf("intervaloMin: %d\n", animales_copia[j].intervaloMin);
                     printf("========================================\n");
         
-                }*/         
+                }       
                 for(uint8_t i = 0; i < 20; i++) {
+                    printf("Enviando animal %lld...\n", copia_Tanimales);
                     indice=i;
                     tarea51(indice);
                     vTaskDelay(pdMS_TO_TICKS(500));
                 }
                                 
-                tarea_modbus = 1; // Cambiar a siguiente tarea
+                tarea_modbus = 2; // Cambiar a siguiente tarea
                 break;
             }
 
-            case 1: {// case para mandar configuracion
+            case 2: {// case para mandar configuracion
                 if (xSemaphoreTake(mutex_configuracion, pdMS_TO_TICKS(100))) {
                         configuracion_copia = configuracion_actual;
                     xSemaphoreGive(mutex_configuracion);
@@ -233,7 +234,7 @@ void task_modbus_comm(void *param)
                 break;
             }
         
-            case 4: { // envion RTC
+            case 0: { // envion RTC
                 read_time();
                 printf("timestamp actual esp: %lld\n", time(NULL));
                 printf("timestamp actual rtc: %lld\n", RTC_time);
@@ -258,14 +259,14 @@ void task_modbus_comm(void *param)
                     envio_RTC = true; // Indicar que se debe enviar el RTC
                 }        
 
-                tarea_modbus = 5; // Cambiar a primera tarea
+                tarea_modbus = 1; // Cambiar a primera tarea
                 break;
             }
             // Agregá más casos según necesites...
 
-            case 5: { // Enviar animales leídos por UART
+            case 4: { // Enviar animales leídos por UART
                 enviar_animales_leidos_uart();
-                tarea_modbus = 0; // Reiniciar a la primera tarea
+                tarea_modbus = 1; // Reiniciar a la primera tarea
                 break;
             }
 
@@ -288,8 +289,8 @@ void task_modbus_comm(void *param)
                     RTC_hora.tm_sec  = 0;
 
                     // Convertir a time_t y escribir al RTC
-                    time_t base_time = mktime(&RTC_hora);
-                    actualizar_reloj(base_time);
+                    //time_t base_time = mktime(&RTC_hora);
+                    actualizar_reloj(RTC_time);
 
                     // Leer de nuevo para confirmar
                     read_time();
