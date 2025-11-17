@@ -17,6 +17,7 @@ char tarea_modbus = 100;
 
 void task_modbus_comm(void *param)
 {
+    
     while (1)
     {
         printf("tarea MODBUS: %d\n", tarea_modbus);
@@ -240,7 +241,7 @@ void task_modbus_comm(void *param)
                 printf("timestamp actual rtc: %lld\n", RTC_time);
  printf("Hora actual: %02d:%02d:%02d\n", RTC_hora.tm_hour, RTC_hora.tm_min, RTC_hora.tm_sec);
     printf("Fecha actual: %02d/%02d/%04d\n", RTC_hora.tm_mday, RTC_hora.tm_mon + 1, RTC_hora.tm_year + 1900);
-    if (RTC_hora.tm_hour == 0) {
+    /*if (RTC_hora.tm_hour == 0) {
                     if(envio_RTC){
                         printf("holaRTC\n");
                         tarea70();
@@ -257,8 +258,9 @@ void task_modbus_comm(void *param)
                         actualizarRTC = false; // Reiniciar la variable actualizarRTC
                     }
                     envio_RTC = true; // Indicar que se debe enviar el RTC
-                }        
+                }*/
 
+tarea70();
                 tarea_modbus = 1; // Cambiar a primera tarea
                 break;
             }
@@ -266,7 +268,7 @@ void task_modbus_comm(void *param)
 
             case 4: { // Enviar animales leídos por UART
                 enviar_animales_leidos_uart();
-                tarea_modbus = 1; // Reiniciar a la primera tarea
+                tarea_modbus = 0; // Reiniciar a la primera tarea
                 break;
             }
 
@@ -362,7 +364,7 @@ void app_main(void)
     snprintf(animales_leidos_actual[i].nombre, sizeof(animales_leidos_actual[i].nombre), "000000000000000");
     }
     
-
+vTaskDelay(pdMS_TO_TICKS(2000));
     //printf("curvas_actual[2].segmentos[5].inicio: %d\n", curvas_actual[2].segmentos[5].inicio);
     printf("INICIO: Iniciando sistema controlador...\n");
     ///printf("fechaServicio: %lld\n", animales_actual[0].fechaServicio);

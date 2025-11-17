@@ -126,19 +126,19 @@ void gestion_animal(QueueHandle_t q) {
 //static int pos_animal = 0;
 //static bool capturando_animal = false;
 
-static int curva_str_a_int(const char *s) {
-    if (strcmp(s, "Ascendente") == 0) return 1;
-    if (strcmp(s, "Constante") == 0) return 2;
-    if (strcmp(s, "Descendente") == 0) return 3;
-    if (strcmp(s, "Forma V") == 0) return 4;
-    return 2;
+static uint8_t curva_str_a_int(const char *s) {
+    if (strcmp(s, "Ascendente") == 0) return 0;
+    if (strcmp(s, "Constante") == 0) return 1;
+    if (strcmp(s, "Descendente") == 0) return 2;
+    if (strcmp(s, "Forma V") == 0) return 3;
+    return 1;
 }
 
-static int indice_str_a_int(const char *s) {
-    if (strstr(s, "Gorda") == s) return 1;
-    if (strstr(s, "Normal") == s) return 2;
-    if (strstr(s, "Flaca") == s) return 3;
-    return 2;
+static uint8_t indice_str_a_int(const char *s) {
+    if (strstr(s, "Gorda") == s) return 0;
+    if (strstr(s, "Normal") == s) return 1;
+    if (strstr(s, "Flaca") == s) return 2;
+    return 1;
 }
 
 void procesar_json_animal(const char *json_str) {
